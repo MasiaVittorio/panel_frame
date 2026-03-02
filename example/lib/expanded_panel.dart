@@ -16,7 +16,6 @@ class ExpandedPanel extends StatelessWidget {
         PanelHeader(),
         Expanded(
           child: ListView(
-            padding: EdgeInsets.zero,
             children: {
               (title: 'Navigation', leading: Icon(Icons.compare_arrows_sharp)):
                   [ClosePanelTile()],
@@ -24,10 +23,12 @@ class ExpandedPanel extends StatelessWidget {
                 SmallAlertTile(),
                 FullAlertTile(),
               ],
+              (title: 'Space', leading: Icon(Icons.space_dashboard)): [
+                Space.vertical(600),
+              ],
             }.groupedCards(),
           ),
         ),
-        SafeArea(top: false, child: Material(child: SizedBox(height: 56))),
       ],
     );
   }

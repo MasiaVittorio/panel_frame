@@ -10,7 +10,6 @@ class _ExpandedPanelAlertContents extends StatelessWidget {
     required this.curve,
     required this.onTargetSizeChanged,
     required this.neededAlertTopSafeArea,
-    required this.mediaQuery,
     this.positionOverlap = 0.3,
     this.opacityOverlap = 0.1,
   });
@@ -18,8 +17,6 @@ class _ExpandedPanelAlertContents extends StatelessWidget {
   final Curve curve;
 
   final Reactive<double> neededAlertTopSafeArea;
-
-  final MediaQueryData mediaQuery;
 
   final ValueChanged<Size> onTargetSizeChanged;
 
@@ -53,6 +50,7 @@ class _ExpandedPanelAlertContents extends StatelessWidget {
           for (int i = 0; i < children.length; i++) {
             final double delta = (i - mainIndex).toDouble().clamp(-1, 1);
             // delta is 0 when i is the displayed index, < 0 when i is too small so must go to the left, > 0 when i is too big so must go to the right
+            final mediaQuery = MediaQuery.of(context);
             list.add(
               CleanProvider(
                 data: _AlertMetadata(canGoBack: i != 0),

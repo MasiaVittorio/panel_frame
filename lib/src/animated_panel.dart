@@ -6,7 +6,7 @@ class _AnimatedPanel extends StatelessWidget {
     required this.collapsedContents,
     required this.value,
     required this.collapsedMargins,
-    required this.openPanelMargin,
+    required this.expandedMargins,
     required this.cc,
     required this.ec,
     required this.cr,
@@ -17,7 +17,13 @@ class _AnimatedPanel extends StatelessWidget {
     required this.expandedParallax,
     required this.onDragUpdate,
     required this.onDragEnd,
+    required this.neededAlertTopSafeArea,
+    required this.isCurrentAlertFullScreen,
   });
+
+  final bool Function() isCurrentAlertFullScreen;
+
+  final Reactive<double> neededAlertTopSafeArea;
 
   final BorderSide cb;
   final BorderSide eb;
@@ -32,7 +38,7 @@ class _AnimatedPanel extends StatelessWidget {
 
   final EdgeInsetsGeometry collapsedMargins;
 
-  final EdgeInsetsGeometry openPanelMargin;
+  final EdgeInsetsGeometry expandedMargins;
 
   final void Function(DragUpdateDetails details) onDragUpdate;
 
@@ -46,47 +52,67 @@ class _AnimatedPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolved = openPanelMargin.resolve(Directionality.of(context));
+    final r = expandedMargins.resolve(Directionality.of(context));
     return Al.bottomCenter(
       child: Padding(
         padding: EdgeInsetsGeometry.lerp(
           collapsedMargins,
-          openPanelMargin,
+          expandedMargins,
           value,
         )!,
-        child: Container(
-          decoration: ShapeDecoration(
-            color: Color.lerp(cc, ec, value),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                bottom: switch ((
-                  resolved.bottom,
-                  resolved.left,
-                  resolved.right,
-                )) {
-                  (0, 0, 0) => Radius.circular(value.rangeMap(to: (cr, 0))),
-                  _ => Radius.circular(value.rangeMap(to: (cr, er))),
-                },
-                top: Radius.circular(value.rangeMap(to: (cr, er))),
+        child: MediaQuery.removePadding(
+          removeTop: false,
+          context: context,
+          removeBottom:
+              expandedMargins.resolve(Directionality.of(context)).bottom > 0,
+          child: Container(
+            decoration: ShapeDecoration(
+              color: Color.lerp(cc, ec, value),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(
+                    value.rangeMap(
+                      to: (
+                        cr,
+                        switch ((r.bottom, r.left, r.right)) {
+                          (0, 0, 0) => 0,
+                          _ => er,
+                        },
+                      ),
+                    ),
+                  ),
+                  top: Radius.circular(
+                    value.rangeMap(
+                      to: (
+                        cr,
+                        switch (neededAlertTopSafeArea.value > 0 ||
+                            isCurrentAlertFullScreen()) {
+                          true => 0,
+                          false => er,
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                side: BorderSide.lerp(cb, eb, value),
               ),
-              side: BorderSide.lerp(cb, eb, value),
             ),
-          ),
-          // elevation: value.rangeMap(to: (ce, ee)),
-          clipBehavior: Clip.antiAlias,
-          child: Material(
-            type: MaterialType.transparency,
-            child: GestureDetector(
-              onVerticalDragEnd: onDragEnd,
-              onVerticalDragUpdate: onDragUpdate,
-              child: Container(
-                color: Colors.transparent,
-                child: AnimatedSwitchingStack(
-                  t: value,
-                  first: collapsedContents,
-                  second: expandedContents,
-                  firstParallax: collapsedParallax,
-                  secondParallax: expandedParallax,
+            // elevation: value.rangeMap(to: (ce, ee)),
+            clipBehavior: Clip.antiAlias,
+            child: Material(
+              type: MaterialType.transparency,
+              child: GestureDetector(
+                onVerticalDragEnd: onDragEnd,
+                onVerticalDragUpdate: onDragUpdate,
+                child: Container(
+                  color: Colors.transparent,
+                  child: AnimatedSwitchingStack(
+                    t: value,
+                    first: collapsedContents,
+                    second: expandedContents,
+                    firstParallax: collapsedParallax,
+                    secondParallax: expandedParallax,
+                  ),
                 ),
               ),
             ),

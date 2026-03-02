@@ -62,11 +62,15 @@ class _Panel extends StatelessWidget {
     final cb = style.collapsedPanelBorderSide(context);
     final eb = style.expandedPanelBorderSide(context);
 
-    final expandedPanel = MediaQuery.removePadding(
-      context: context,
-      removeBottom: false, // TODO: think about this remove bottom
-      removeTop: true,
-      child: this.expandedPanel,
+    final expandedPanel = Builder(
+      builder: (context) {
+        return MediaQuery.removePadding(
+          context: context,
+          removeBottom: false,
+          removeTop: true,
+          child: this.expandedPanel,
+        );
+      },
     );
 
     return ListenableBuilder(
@@ -74,7 +78,6 @@ class _Panel extends StatelessWidget {
       builder: (context, child) {
         final expandedPanelAlertContents = _ExpandedPanelAlertContents(
           neededAlertTopSafeArea: neededAlertTopSafeArea,
-          mediaQuery: mediaQuery,
           isAnimatingBack: alertsState.isAnimatingBack,
           duration: duration,
           curve: curve,
@@ -132,7 +135,7 @@ class _Panel extends StatelessWidget {
           alertsStateValue: alertsState,
           style: style,
           child: expandedPanelContents,
-          builder: (context, child, openPanelMargin) {
+          builder: (context, child, expandedMargins) {
             // this animates the transition of the panel from the collapsed state
             // to the open state, and all the properties entailed
             return ValueListenableBuilder(
@@ -140,13 +143,16 @@ class _Panel extends StatelessWidget {
               child: child,
               builder: (context, value, child) {
                 return _AnimatedPanel(
+                  isCurrentAlertFullScreen: () =>
+                      alertsState.isCurrentAlertFullScreen,
+                  neededAlertTopSafeArea: neededAlertTopSafeArea,
                   expandedParallax: style.expandedPanelParallax,
                   collapsedParallax: style.collapsedPanelParallax,
                   value: value,
                   expandedContents: child!,
                   collapsedContents: collapsedPanel,
                   collapsedMargins: collapsedMargins,
-                  openPanelMargin: openPanelMargin,
+                  expandedMargins: expandedMargins,
                   cb: cb,
                   eb: eb,
                   cc: cc,

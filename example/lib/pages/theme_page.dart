@@ -61,6 +61,45 @@ class ThemePage extends StatelessWidget {
               );
             },
           ),
+          ListTile(
+            leading: Icon(MdiIcons.panHorizontal),
+            title: Text('Expanded panel margin'),
+            trailing: Text(style.expandedPanelMargin(context).left.toString()),
+            onTap: () {
+              onStyleChange(
+                style.copyWith(
+                  expandedPanelMargin: (_) =>
+                      style.expandedPanelMargin(context).left == 0
+                      ? EdgeInsets.fromLTRB(
+                          layout.margin.large,
+                          layout.margin.large,
+                          layout.margin.large,
+                          layout.margin.large,
+                        )
+                      : EdgeInsets.zero,
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(MdiIcons.panVertical),
+            title: Text('panel / app bar overlap'),
+            trailing: Text(style.openPanelTopBarOverlap.toString()),
+            onTap: () {
+              onStyleChange(
+                style.copyWith(
+                  computeOpenPanelTopBarOverlap: switch (style
+                      .openPanelTopBarOverlap) {
+                    final double over
+                        when style.collapsedPanelHeight / 2 == over =>
+                      (_) => 0,
+                    0 => (_) => -layout.margin.large,
+                    _ => PanelFrameStyle.defaultComputeOpenPanelTopBarOverlap,
+                  },
+                ),
+              );
+            },
+          ),
         ].groupedCards(),
       ],
     );

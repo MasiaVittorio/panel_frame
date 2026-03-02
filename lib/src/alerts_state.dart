@@ -88,17 +88,24 @@ class _AlertsState extends ChangeNotifier {
         ? null
         : currentAlert;
 
-    final bool actAsFullScreen = switch (focusedAlert) {
-      final PanelAlertWidget w =>
-        w.wantsToBeFullScreen ?? style.fullScreenExpandedPanel,
-      _ => style.fullScreenExpandedPanel,
-    };
-
     final EdgeInsets desiredExpandedPanelMargins = switch (focusedAlert) {
       final PanelAlertWidget w =>
         w.overridePanelMargin ?? style.expandedPanelMargin(context),
       _ => style.expandedPanelMargin(context),
     };
+
+    final bool forceExtendToFullScreen = switch (focusedAlert) {
+      final PanelAlertWidget w => w.wantsToBeFullScreen ?? false,
+      _ => false,
+    };
+
+    final bool removeSafeAreas = forceExtendToFullScreen
+        ? true
+        : switch (focusedAlert) {
+            final PanelAlertWidget w =>
+              w.wantsToBeFullScreen ?? style.fullScreenExpandedPanel,
+            _ => style.fullScreenExpandedPanel,
+          };
 
     final safe = context.safe;
 
@@ -106,14 +113,23 @@ class _AlertsState extends ChangeNotifier {
       safe,
     );
 
-    return desiredExpandedPanelMargins +
+    final baseMargins = forceExtendToFullScreen
+        ? EdgeInsets.zero
+        : desiredExpandedPanelMargins;
+
+    return baseMargins +
         EdgeInsets.only(
-          bottom: actAsFullScreen ? 0 : safe.bottom,
-          top: switch ((focusedAlert, actAsFullScreen)) {
+          bottom: removeSafeAreas && baseMargins.bottom == 0 ? 0 : safe.bottom,
+          top: switch ((focusedAlert, removeSafeAreas)) {
             (null, _) => justExpandedPanelTopMargin,
-            (_, true) => 0,
+            (_, true) => baseMargins.top == 0 ? 0 : safe.top,
             (_, false) => safe.top,
           },
         );
   }
+
+  bool get isCurrentAlertFullScreen => switch (currentAlert) {
+    final PanelAlertWidget w => w.wantsToBeFullScreen ?? false,
+    _ => false,
+  };
 }
