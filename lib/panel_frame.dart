@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +24,7 @@ part 'src/proportional_stack.dart';
 part 'src/ready_components/frame_app_bar.dart';
 part 'src/ready_components/headered_list.dart';
 part 'src/ready_components/panel_header.dart';
+part 'src/snackbar.dart';
 part 'src/top_bar.dart';
 
 extension PanelFrameStateExtension on BuildContext {
@@ -55,9 +58,9 @@ class PanelFrame extends StatefulWidget {
   State<PanelFrame> createState() => PanelFrameState();
 }
 
-class PanelFrameState extends State<PanelFrame>
-    with SingleTickerProviderStateMixin {
+class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
   late AnimationController controller;
+  late AnimationController snackbarAnimationController;
 
   /// this is updated by the proportional stack inside [_ExpandedPanelAlertContents]
   /// and is used by the gestures to drive the open / close value of the animation based on the movement of the finger relative to the size of the alert
@@ -67,6 +70,9 @@ class PanelFrameState extends State<PanelFrame>
 
   late final Reactive<bool> isMostlyOpened;
   late final Reactive<double> _neededAlertTopSafeArea;
+
+  PanelSnackBar? _snackBar;
+  Curve _snackBarCurve = Easings.emphasizedDecelerate;
 
   @override
   void initState() {
@@ -81,12 +87,21 @@ class PanelFrameState extends State<PanelFrame>
       debugLabel: 'Panel open value',
       value: 0,
     );
+    snackbarAnimationController = AnimationController(
+      vsync: this,
+      duration: getUsedStyle.duration,
+      lowerBound: 0,
+      upperBound: 1,
+      debugLabel: 'Snackbar animation',
+      value: 0,
+    );
     controller.addListener(_listener);
   }
 
   @override
   void dispose() {
     controller.removeListener(_listener);
+    snackbarAnimationController.dispose();
     controller.dispose();
     isMostlyOpened.dispose();
     _alertsState.dispose();
@@ -214,6 +229,43 @@ class PanelFrameState extends State<PanelFrame>
     );
   }
 
+  Future<void> closeSnackBar() async {
+    if (!mounted) return;
+    _snackBarCurve = Easings.emphasizedAccelerate;
+    await snackbarAnimationController.animateTo(
+      0,
+      duration: Durations.short4,
+      curve: Curves.linear, // curves are applied in the widget
+    );
+    if (!mounted) return;
+    setState(() {
+      _snackBar = null;
+    });
+  }
+
+  int _snackBarId = 0;
+  Future<void> showSnackBar(PanelSnackBar snackBar) async {
+    if (!mounted) return;
+    if (snackbarAnimationController.value > 0) {
+      await closeSnackBar();
+    }
+    if (!mounted) return;
+    setState(() {
+      _snackBar = snackBar;
+      _snackBarId++;
+    });
+    final int id = _snackBarId;
+    _snackBarCurve = Easings.emphasizedDecelerate;
+    await snackbarAnimationController.animateTo(1, duration: Durations.medium3);
+    if (!mounted) return;
+    if (snackBar.duration case Duration duration) {
+      await Future.delayed(duration);
+      if (!mounted) return;
+      if (_snackBarId != id) return;
+      await closeSnackBar();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -250,9 +302,20 @@ class PanelFrameState extends State<PanelFrame>
       curve: style.curve,
     );
 
-    final collapsedPanel = SizedBox(
-      height: style.collapsedPanelHeight,
-      child: widget.collapsedPanel,
+    final collapsedPanel = Stack(
+      children: [
+        SizedBox(
+          height: style.collapsedPanelHeight,
+          child: widget.collapsedPanel,
+        ),
+        Positioned.fill(
+          child: _SnackBar(
+            snackbarAnimation: snackbarAnimationController,
+            curve: _snackBarCurve,
+            snackBar: _snackBar,
+          ),
+        ),
+      ],
     );
 
     void onDragUpdate(DragUpdateDetails details) => onPanelDrag(

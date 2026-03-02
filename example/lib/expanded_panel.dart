@@ -14,21 +14,15 @@ class ExpandedPanel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         PanelHeader(),
-        Expanded(
-          child: ListView(
-            children: {
-              (title: 'Navigation', leading: Icon(Icons.compare_arrows_sharp)):
-                  [ClosePanelTile()],
-              (title: 'Alerts', leading: Icon(Icons.warning_outlined)): [
-                SmallAlertTile(),
-                FullAlertTile(),
-              ],
-              (title: 'Space', leading: Icon(Icons.space_dashboard)): [
-                Space.vertical(600),
-              ],
-            }.groupedCards(),
-          ),
-        ),
+        ...{
+          (title: 'Navigation', leading: Icon(Icons.compare_arrows_sharp)): [
+            ClosePanelTile(),
+          ],
+          (title: 'Alerts', leading: Icon(Icons.warning_outlined)): [
+            SmallAlertTile(),
+            FullAlertTile(),
+          ],
+        }.groupedCards(),
       ],
     );
   }

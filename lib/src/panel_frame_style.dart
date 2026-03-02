@@ -68,7 +68,7 @@ class PanelFrameStyle {
     this.topBarExpandedBackgroundColor = defaultTopBarExpandedBackgroundColor,
     this.scaffoldBackgroundColor = defaultScaffoldBackgroundColor,
     this.computeOpenPanelTopBarOverlap = defaultComputeOpenPanelTopBarOverlap,
-    this.duration = Durations.medium3,
+    this.duration = Durations.medium4,
     this.curve = Easings.emphasized,
     this.showDragHandleInHeaders = true,
   });

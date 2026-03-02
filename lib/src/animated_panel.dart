@@ -53,6 +53,31 @@ class _AnimatedPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = expandedMargins.resolve(Directionality.of(context));
+    final borderRadius = BorderRadius.vertical(
+      bottom: Radius.circular(
+        value.rangeMap(
+          to: (
+            cr,
+            switch ((r.bottom, r.left, r.right)) {
+              (0, 0, 0) => 0,
+              _ => er,
+            },
+          ),
+        ),
+      ),
+      top: Radius.circular(
+        value.rangeMap(
+          to: (
+            cr,
+            switch (neededAlertTopSafeArea.value > 0 ||
+                isCurrentAlertFullScreen()) {
+              true => 0,
+              false => er,
+            },
+          ),
+        ),
+      ),
+    );
     return Al.bottomCenter(
       child: Padding(
         padding: EdgeInsetsGeometry.lerp(
@@ -65,53 +90,32 @@ class _AnimatedPanel extends StatelessWidget {
           context: context,
           removeBottom:
               expandedMargins.resolve(Directionality.of(context)).bottom > 0,
-          child: Container(
+          child: DecoratedBox(
             decoration: ShapeDecoration(
               color: Color.lerp(cc, ec, value),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(
-                    value.rangeMap(
-                      to: (
-                        cr,
-                        switch ((r.bottom, r.left, r.right)) {
-                          (0, 0, 0) => 0,
-                          _ => er,
-                        },
-                      ),
-                    ),
-                  ),
-                  top: Radius.circular(
-                    value.rangeMap(
-                      to: (
-                        cr,
-                        switch (neededAlertTopSafeArea.value > 0 ||
-                            isCurrentAlertFullScreen()) {
-                          true => 0,
-                          false => er,
-                        },
-                      ),
-                    ),
-                  ),
-                ),
+                borderRadius: borderRadius,
                 side: BorderSide.lerp(cb, eb, value),
               ),
             ),
             // elevation: value.rangeMap(to: (ce, ee)),
-            clipBehavior: Clip.antiAlias,
-            child: Material(
-              type: MaterialType.transparency,
-              child: GestureDetector(
-                onVerticalDragEnd: onDragEnd,
-                onVerticalDragUpdate: onDragUpdate,
-                child: Container(
-                  color: Colors.transparent,
-                  child: AnimatedSwitchingStack(
-                    t: value,
-                    first: collapsedContents,
-                    second: expandedContents,
-                    firstParallax: collapsedParallax,
-                    secondParallax: expandedParallax,
+            child: ClipRRect(
+              clipBehavior: Clip.antiAlias,
+              borderRadius: borderRadius,
+              child: Material(
+                type: MaterialType.transparency,
+                child: GestureDetector(
+                  onVerticalDragEnd: onDragEnd,
+                  onVerticalDragUpdate: onDragUpdate,
+                  child: Container(
+                    color: Colors.transparent,
+                    child: AnimatedSwitchingStack(
+                      t: value,
+                      first: collapsedContents,
+                      second: expandedContents,
+                      firstParallax: collapsedParallax,
+                      secondParallax: expandedParallax,
+                    ),
                   ),
                 ),
               ),

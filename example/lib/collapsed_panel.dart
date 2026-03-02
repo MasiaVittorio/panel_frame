@@ -1,4 +1,3 @@
-import 'package:example/alerts/full_screen_alert.dart';
 import 'package:example/alerts/my_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:panel_frame/panel_frame.dart';
@@ -9,36 +8,39 @@ class CollapsedPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.theme;
-    final layout = theme.layout;
     final panelFrame = context.panelFrame;
+    final style = context.panelFrameStyle;
 
     return InkWell(
       onTap: panelFrame.openPanel,
       child: Stack(
         children: [
           Center(child: PanelDragHandle()),
-          Positioned.fill(
-            child: Pad(
-              horizontal: layout.padding.large,
-              child: Al.centerRight(
-                child: IconButton(
-                  onPressed: () => panelFrame.showAlert(FullScreenAlert()),
-                  icon: Icon(Icons.fullscreen),
-                  style: FrameAppBar.buttonStyle(context.theme),
-                ),
+          Positioned(
+            left: 0,
+            width: style.collapsedPanelHeight,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: IconButton(
+                onPressed: () => panelFrame.showAlert(MyAlert(height: 400)),
+                icon: Icon(Icons.horizontal_split_rounded),
+                style: FrameAppBar.buttonStyle(context.theme),
               ),
             ),
           ),
-          Positioned.fill(
-            child: Pad(
-              horizontal: layout.padding.large,
-              child: Al.centerLeft(
-                child: IconButton(
-                  onPressed: () => panelFrame.showAlert(MyAlert(height: 400)),
-                  icon: Icon(Icons.horizontal_split_rounded),
-                  style: FrameAppBar.buttonStyle(context.theme),
+          Positioned(
+            right: 0,
+            width: style.collapsedPanelHeight,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: IconButton(
+                onPressed: () => panelFrame.showSnackBar(
+                  PanelSnackBar(child: Icon(Icons.add)),
                 ),
+                icon: Icon(Icons.check),
+                style: FrameAppBar.buttonStyle(context.theme),
               ),
             ),
           ),

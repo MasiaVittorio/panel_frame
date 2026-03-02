@@ -31,7 +31,7 @@ class _Panel extends StatelessWidget {
   final Duration duration;
   final Curve curve;
   final AnimationController controller;
-  final SizedBox collapsedPanel;
+  final Widget collapsedPanel;
   final ThemeData theme;
   final EdgeInsets safe;
   final double bottomBarHeight;

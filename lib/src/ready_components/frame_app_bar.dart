@@ -48,9 +48,11 @@ class FrameAppBar extends StatelessWidget {
                     style: buttonStyle(theme),
                     onPressed: frame.togglePanel,
                     icon: frame.isMostlyOpened.build((context, value) {
-                      return ImplicitlyAnimatedIcon(
-                        icon: AnimatedIcons.menu_close,
-                        progress: value ? 1 : 0,
+                      return ImplicitlySwitchingIcon(
+                        firstIcon: AnimatedIcons.menu_close,
+                        secondIcon: AnimatedIcons.close_menu,
+                        duration: const Duration(milliseconds: 300),
+                        progress: value ? 1.0 : 0.0,
                       );
                     }),
                   ),
