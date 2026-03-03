@@ -1,4 +1,6 @@
 import 'package:example/main.dart';
+import 'package:example/pages/settings_page.dart';
+import 'package:example/pages/snackbars_page.dart';
 import 'package:flutter/material.dart';
 import 'package:sid_base/sid_base.dart';
 
@@ -12,15 +14,14 @@ class MyBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RadioPageTransition(
-      page: page,
-      orderedPages: [BodyPage.alerts, BodyPage.theme],
-      builder: (context, value) {
-        return switch (value) {
-          BodyPage.alerts => AlertsPage(),
-          BodyPage.theme => ThemePage(),
-        };
-      },
+    return AnimatedPagedView(
+      value: page,
+      pages: [
+        ViewPage(value: BodyPage.theme, child: ThemePage()),
+        ViewPage(value: BodyPage.alerts, child: AlertsPage()),
+        ViewPage(value: BodyPage.snackbars, child: SnackBarsPage()),
+        ViewPage(value: BodyPage.settings, child: SettingsPage()),
+      ],
     );
   }
 }

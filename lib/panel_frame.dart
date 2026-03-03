@@ -1,8 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:call_to_action/call_to_action.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:panel_frame/panel_frame.dart';
+import 'package:segmented_slider/segmented_slider.dart';
 import 'package:sid_base/sid_base.dart';
 
 part 'src/alerts_state.dart';
@@ -21,9 +24,11 @@ part 'src/panel_frame.dart';
 part 'src/panel_frame_logic.dart';
 part 'src/panel_frame_style.dart';
 part 'src/proportional_stack.dart';
+part 'src/ready_components/color_picker_panel.dart';
 part 'src/ready_components/frame_app_bar.dart';
 part 'src/ready_components/headered_list.dart';
 part 'src/ready_components/panel_header.dart';
+part 'src/ready_components/theme_variant_picker.dart';
 part 'src/snackbar.dart';
 part 'src/top_bar.dart';
 
@@ -69,6 +74,7 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
   final _AlertsState _alertsState = _AlertsState();
 
   late final Reactive<bool> isMostlyOpened;
+  late final Reactive<bool> isAppBarExpanded;
   late final Reactive<double> _neededAlertTopSafeArea;
 
   PanelSnackBar? _snackBar;
@@ -96,6 +102,18 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
       value: 0,
     );
     controller.addListener(_listener);
+    isAppBarExpanded = isMostlyOpened.related(
+      (value) => value && !_alertsState.isShowingAlert,
+    );
+    _alertsState.addListener(_updateIsAppBarExpanded);
+  }
+
+  void _updateIsAppBarExpanded() {
+    isAppBarExpanded.update(
+      isMostlyOpened.value &&
+          ((!_alertsState.isShowingAlert) ||
+              _alertsState.isGoingBackToExpandedPanelFromFirstAlert),
+    );
   }
 
   @override
@@ -104,6 +122,8 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
     snackbarAnimationController.dispose();
     controller.dispose();
     isMostlyOpened.dispose();
+    isAppBarExpanded.dispose();
+    _alertsState.removeListener(_updateIsAppBarExpanded);
     _alertsState.dispose();
     _neededAlertTopSafeArea.dispose();
     super.dispose();
@@ -409,6 +429,7 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
     double vel = -details.velocity.pixelsPerSecond.dy;
     if (vel.abs() >= minFlingVelocity) {
       if (vel > 0) {
+        // TODO: craft a better curve / duration based on the velocity and the current position of the panel
         openPanel();
         return true;
       } else {

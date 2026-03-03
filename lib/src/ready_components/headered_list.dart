@@ -8,11 +8,15 @@ class HeaderedList extends StatelessWidget {
     this.title,
     this.subtitle,
     this.showDragHandle,
+    this.bottom,
+    this.wrapBottomChildWithSafeArea = true,
   });
 
   final double? height;
   final Widget? title;
   final Widget? subtitle;
+  final Widget? bottom;
+  final bool wrapBottomChildWithSafeArea;
   final List<Widget> children;
   final bool? showDragHandle;
 
@@ -26,19 +30,34 @@ class HeaderedList extends StatelessWidget {
 
     return SizedBox(
       height: height,
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ListView(
-            padding: context.safe.copyWith(top: 0),
-            children: [
-              Opacity(
-                opacity: 0,
-                child: IgnorePointer(ignoring: true, child: header),
-              ),
-              ...children,
-            ],
+          Expanded(
+            child: Stack(
+              children: [
+                ListView(
+                  padding: context.safe.copyWith(
+                    top: 0,
+                    bottom: bottom == null ? null : 0,
+                  ),
+                  children: [
+                    Opacity(
+                      opacity: 0,
+                      child: IgnorePointer(ignoring: true, child: header),
+                    ),
+                    ...children,
+                  ],
+                ),
+                Positioned(top: 0, left: 0, right: 0, child: header),
+              ],
+            ),
           ),
-          Positioned(top: 0, left: 0, right: 0, child: header),
+          if (bottom case Widget bottom)
+            if (wrapBottomChildWithSafeArea)
+              SafeArea(bottom: true, top: false, child: bottom)
+            else
+              bottom,
         ],
       ),
     );

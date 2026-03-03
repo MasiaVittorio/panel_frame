@@ -24,20 +24,33 @@ class MyBottomBar extends StatelessWidget implements PreferredSizeWidget {
           singleBackgroundColor:
               context.theme.colorScheme.surfaceContainerLowest,
           selectedValue: page,
-          orderedValues: [BodyPage.alerts, BodyPage.theme],
-          items: {
-            BodyPage.alerts: RadioNavBarItem(
-              title: 'Alerts',
-              icon: Icons.warning,
-              unselectedIcon: Icons.warning_amber,
-            ),
-            BodyPage.theme: RadioNavBarItem(
-              title: 'Theme',
-              icon: Icons.palette,
-              unselectedIcon: Icons.palette_outlined,
-            ),
-          },
           onSelect: onPageChanged,
+          items: [
+            RadioNavBarItem(
+              value: BodyPage.theme,
+              title: Text('Theme'),
+              icon: Icon(Icons.palette),
+              unselectedIcon: Icon(Icons.palette_outlined),
+            ),
+            RadioNavBarItem(
+              value: BodyPage.alerts,
+              title: Text('Alerts'),
+              icon: Icon(Icons.warning),
+              unselectedIcon: Icon(Icons.warning_amber),
+            ),
+            RadioNavBarItem(
+              value: BodyPage.snackbars,
+              title: Text('Snackbars'),
+              icon: Icon(Icons.notifications),
+              unselectedIcon: Icon(Icons.notifications_none),
+            ),
+            RadioNavBarItem(
+              value: BodyPage.settings,
+              title: Text('Settings'),
+              icon: Icon(Icons.settings),
+              unselectedIcon: Icon(Icons.settings_outlined),
+            ),
+          ],
         ),
       ),
     );

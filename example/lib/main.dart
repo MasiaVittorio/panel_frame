@@ -28,14 +28,9 @@ class _MyAppState extends State<MyApp> {
         return MaterialApp(
           title: 'Flutter Demo',
           themeMode: themeMode,
-          theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.orange)),
+          theme: lightTheme,
+          darkTheme: darkTheme,
           home: MyHomePage(title: 'Flutter Demo Home Page'),
-          darkTheme: ThemeData(
-            colorScheme: .fromSeed(
-              seedColor: Colors.deepPurple,
-              brightness: Brightness.dark,
-            ),
-          ),
         );
       },
     );
@@ -61,11 +56,15 @@ extension OnStyleChanged on BuildContext {
 
 enum BodyPage {
   alerts,
-  theme;
+  snackbars,
+  theme,
+  settings;
 
   IconData get icon => switch (this) {
     BodyPage.alerts => Icons.warning_outlined,
+    BodyPage.snackbars => Icons.notifications_outlined,
     BodyPage.theme => Icons.palette_outlined,
+    BodyPage.settings => Icons.settings_outlined,
   };
 }
 
@@ -112,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
           topBarBuilder: (_, child, openValue) {
             return FrameAppBar(
               title: child!,
-              openedValue: openValue,
+              openValue: openValue,
               panelSubtitle: Text("Panel subtitle"),
             );
           },

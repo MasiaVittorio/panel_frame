@@ -64,17 +64,17 @@ class _SnackBar extends StatelessWidget {
                   offsetFromRight: snackBar.fromRight,
                 ),
                 child: Material(
-                  color: theme.colorScheme.inverseSurface,
+                  color: theme.colorScheme.primaryContainer,
                   child: Opacity(
                     opacity: childOpacity,
                     child: DefaultTextStyle(
                       style: DefaultTextStyle.of(context).style.copyWith(
-                        color: theme.colorScheme.onInverseSurface,
+                        color: theme.colorScheme.onPrimaryContainer,
                       ),
                       child: IconTheme(
                         data: IconTheme.of(
                           context,
-                        ).copyWith(color: theme.colorScheme.onInverseSurface),
+                        ).copyWith(color: theme.colorScheme.onPrimaryContainer),
                         child: snackBar.child,
                       ),
                     ),
@@ -96,7 +96,7 @@ class _SnackBar extends StatelessWidget {
                         heightFactor: closeScale,
                         alignment: Alignment.center,
                         child: Material(
-                          color: theme.colorScheme.inversePrimary,
+                          color: theme.colorScheme.primary,
                           child: InkWell(
                             onTap: value >= 0.9
                                 ? context.panelFrame.closeSnackBar
@@ -106,7 +106,7 @@ class _SnackBar extends StatelessWidget {
                                 opacity: closeOpacity,
                                 child: Icon(
                                   Icons.close,
-                                  color: theme.colorScheme.inverseSurface,
+                                  color: theme.colorScheme.onPrimary,
                                 ),
                               ),
                             ),

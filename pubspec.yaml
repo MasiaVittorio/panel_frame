@@ -14,6 +14,10 @@ dependencies:
     sdk: flutter
   sid_base:
     path: ../sid_base
+  call_to_action:
+    path: ../call_to_action
+  segmented_slider:
+    path: ../segmented_slider
 
 dev_dependencies:
   flutter_test:

@@ -4,13 +4,13 @@ class FrameAppBar extends StatelessWidget {
   const FrameAppBar({
     super.key,
     required this.title,
-    required this.openedValue,
+    required this.openValue,
     this.panelSubtitle,
     this.showMenuButton = true,
     this.menuButtonOnTheRight = false,
   });
 
-  final double openedValue;
+  final double openValue;
   final Widget title;
   final Widget? panelSubtitle;
   final bool showMenuButton;
@@ -33,6 +33,8 @@ class FrameAppBar extends StatelessWidget {
     final theme = context.theme;
     final layout = theme.layout;
     final frame = context.panelFrame;
+    final isExpanded = frame.isAppBarExpanded;
+
     return Material(
       child: SafeArea(
         bottom: false,
@@ -47,7 +49,7 @@ class FrameAppBar extends StatelessWidget {
                   child: IconButton(
                     style: buttonStyle(theme),
                     onPressed: frame.togglePanel,
-                    icon: frame.isMostlyOpened.build((context, value) {
+                    icon: isExpanded.build((context, value) {
                       return ImplicitlySwitchingIcon(
                         firstIcon: AnimatedIcons.menu_close,
                         secondIcon: AnimatedIcons.close_menu,
@@ -79,21 +81,19 @@ class FrameAppBar extends StatelessWidget {
                           context,
                         ).style.merge(theme.textTheme.bodyMedium),
                         textAlign: TextAlign.center,
-                        child: FractionallyListed(
-                          value: openedValue,
-                          child: child,
-                        ),
+                        child: isExpanded.build((context, value) {
+                          return GenericAnimatedBuilder(
+                            value: value ? 1.0 : 0.0,
+                            child: child,
+                            builder: (context, animatedValue, child) {
+                              return FractionallyListed(
+                                value: animatedValue,
+                                child: child,
+                              );
+                            },
+                          );
+                        }),
                       ),
-                    Container(),
-                    Container(),
-                    Container(),
-                    Container(),
-                    Container(),
-                    Container(),
-                    Container(),
-                    Container(),
-                    Container(),
-                    Container(),
                   ],
                 ),
               ),

@@ -5,20 +5,12 @@ extension ThemeLogicFromContext on BuildContext {
   ThemeLogic get themeLogic => ThemeLogic.of(this);
 }
 
-extension ThemeModeIcons on ThemeMode {
-  IconData get icon => switch (this) {
-    ThemeMode.system => MdiIcons.android,
-    ThemeMode.light => MdiIcons.weatherSunny,
-    ThemeMode.dark => MdiIcons.weatherNight,
-  };
-}
-
 class ThemeLogic extends ThemeLogicBase {
   static ThemeLogic of(BuildContext context) => context.provide<ThemeLogic>();
 
   @override
   CustomScheme get defaultCustomScheme => CustomScheme(
-    dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
+    dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
     contrastLevel: 0,
     seedColor: Colors.grey,
   );
