@@ -20,9 +20,10 @@ part 'src/expanded_margin_builder.dart';
 part 'src/panel.dart';
 part 'src/panel_alert_contents.dart';
 part 'src/panel_alert_widget.dart';
-part 'src/panel_frame.dart';
+part 'src/panel_frame_layout.dart';
 part 'src/panel_frame_logic.dart';
 part 'src/panel_frame_style.dart';
+part 'src/panel_frame_style_data.dart';
 part 'src/proportional_stack.dart';
 part 'src/ready_components/color_picker_panel.dart';
 part 'src/ready_components/frame_app_bar.dart';
@@ -34,10 +35,10 @@ part 'src/top_bar.dart';
 
 extension PanelFrameStateExtension on BuildContext {
   PanelFrameState get panelFrame => provide<PanelFrameState>();
-  PanelFrameStyle get panelFrameStyle => provide<PanelFrameStyle>();
+  PanelFrameStyleData get panelFrameStyle => PanelFrameStyle.of(this);
 }
 
-class PanelFrame extends StatefulWidget {
+class PanelFrame extends StatelessWidget {
   const PanelFrame({
     super.key,
     required this.collapsedPanel,
@@ -57,13 +58,55 @@ class PanelFrame extends StatefulWidget {
   topBarBuilder;
   final Widget? topBarChild;
 
-  final PanelFrameStyle? style;
+  final PanelFrameStyleData? style;
 
   @override
-  State<PanelFrame> createState() => PanelFrameState();
+  Widget build(BuildContext context) {
+    final style =
+        this.style ??
+        PanelFrameStyle.maybeOf(context) ??
+        PanelFrameStyleData.defaultStyle;
+    return PanelFrameStyle(
+      style: style,
+      child: _PanelFrame(
+        collapsedPanel: collapsedPanel,
+        expandedPanel: expandedPanel,
+        body: body,
+        topBarBuilder: topBarBuilder,
+        bottomBar: bottomBar,
+        topBarChild: topBarChild,
+        style: style,
+      ),
+    );
+  }
 }
 
-class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
+class _PanelFrame extends StatefulWidget {
+  const _PanelFrame({
+    required this.collapsedPanel,
+    required this.expandedPanel,
+    required this.body,
+    required this.topBarBuilder,
+    required this.bottomBar,
+    required this.topBarChild,
+    required this.style,
+  });
+
+  final PreferredSizeWidget bottomBar;
+  final Widget collapsedPanel;
+  final Widget expandedPanel;
+  final Widget body;
+  final Widget Function(BuildContext context, Widget? child, double openValue)
+  topBarBuilder;
+  final Widget? topBarChild;
+
+  final PanelFrameStyleData style;
+
+  @override
+  State<_PanelFrame> createState() => PanelFrameState();
+}
+
+class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
   late AnimationController controller;
   late AnimationController snackbarAnimationController;
 
@@ -75,6 +118,7 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
 
   late final Reactive<bool> isMostlyOpened;
   late final Reactive<bool> isAppBarExpanded;
+  late final Reactive<bool> isShowingAlert;
   late final Reactive<double> _neededAlertTopSafeArea;
 
   PanelSnackBar? _snackBar;
@@ -84,10 +128,11 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     isMostlyOpened = Reactive(false);
+    isShowingAlert = Reactive(false);
     _neededAlertTopSafeArea = Reactive(0);
     controller = AnimationController(
       vsync: this,
-      duration: getUsedStyle.duration,
+      duration: widget.style.duration,
       lowerBound: 0,
       upperBound: 1,
       debugLabel: 'Panel open value',
@@ -95,7 +140,7 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
     );
     snackbarAnimationController = AnimationController(
       vsync: this,
-      duration: getUsedStyle.duration,
+      duration: widget.style.duration,
       lowerBound: 0,
       upperBound: 1,
       debugLabel: 'Snackbar animation',
@@ -109,6 +154,10 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
   }
 
   void _updateIsAppBarExpanded() {
+    isShowingAlert.update(
+      _alertsState.isShowingAlert &&
+          !(_alertsState.isAnimatingBack && _alertsState.alerts.length == 1),
+    );
     isAppBarExpanded.update(
       isMostlyOpened.value &&
           ((!_alertsState.isShowingAlert) ||
@@ -122,6 +171,7 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
     snackbarAnimationController.dispose();
     controller.dispose();
     isMostlyOpened.dispose();
+    isShowingAlert.dispose();
     isAppBarExpanded.dispose();
     _alertsState.removeListener(_updateIsAppBarExpanded);
     _alertsState.dispose();
@@ -160,12 +210,10 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
   }
 
   double _computeNeededSafeArea(Size screenSize, double targetAlertHeight) {
-    final style = getUsedStyle;
-
     final safe = context.safe;
 
     final currentExpandedPanelMargin = _alertsState
-        .resultingExpandedPanelMargin(style, context);
+        .resultingExpandedPanelMargin(widget.style, context);
 
     double topMargin = currentExpandedPanelMargin.top.clamp(0, double.infinity);
 
@@ -189,16 +237,13 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
     return remaining < topSafe ? topSafe - remaining : 0;
   }
 
-  PanelFrameStyle get getUsedStyle =>
-      widget.style ?? PanelFrameStyle.defaultStyle;
-
   void showAlert(Widget alert) {
     _alertsState.addAlert(alert: alert, isMostlyOpened: isMostlyOpened.value);
     openPanel();
   }
 
   Future<void> previousAlert() => _alertsState.goBack(
-    duration: getUsedStyle.duration,
+    duration: widget.style.duration,
     closePanel: closePanel,
     mountedGetter: () => mounted,
   );
@@ -207,11 +252,10 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
     if (!mounted) return;
 
     if (controller.value > 0) {
-      final style = getUsedStyle;
       await controller.animateBack(
         0.0,
-        duration: style.duration,
-        curve: style.curve,
+        duration: widget.style.duration,
+        curve: widget.style.curve,
       );
       _alertsState.clear();
       if (!mounted) return;
@@ -223,11 +267,10 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
   Future<void> openPanel() async {
     if (!mounted) return;
     if (controller.value < 1) {
-      final style = getUsedStyle;
       return controller.animateTo(
         1.0,
-        duration: style.duration,
-        curve: style.curve,
+        duration: widget.style.duration,
+        curve: widget.style.curve,
       );
     }
   }
@@ -291,20 +334,18 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
     final mediaQuery = MediaQuery.of(context);
     final safe = mediaQuery.padding;
 
-    final style = getUsedStyle;
-
     final theme = context.theme;
 
     final bottomBar = _BottomBar(
       bottomBarHeight: widget.bottomBar.preferredSize.height,
       safe: safe,
-      style: style,
+      style: widget.style,
       mediaQuery: mediaQuery,
       child: widget.bottomBar,
     );
 
     final barrier = _Barrier(
-      style: style,
+      style: widget.style,
       controller: controller,
       closePanel: closePanel,
     );
@@ -312,20 +353,20 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
     final topBar = _TopBar(
       alertsState: _alertsState,
       controller: controller,
-      collapsedTopBarHeight: style.topBarCollapsedHeight,
-      expandedTopBarHeight: style.topBarExpandedHeight,
+      collapsedTopBarHeight: widget.style.topBarCollapsedHeight,
+      expandedTopBarHeight: widget.style.topBarExpandedHeight,
       safe: safe,
       topBarBuilder: widget.topBarBuilder,
       topBarChild: widget.topBarChild,
       barrier: barrier,
-      duration: style.duration,
-      curve: style.curve,
+      duration: widget.style.duration,
+      curve: widget.style.curve,
     );
 
     final collapsedPanel = Stack(
       children: [
         SizedBox(
-          height: style.collapsedPanelHeight,
+          height: widget.style.collapsedPanelHeight,
           child: widget.collapsedPanel,
         ),
         Positioned.fill(
@@ -340,16 +381,16 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
 
     void onDragUpdate(DragUpdateDetails details) => onPanelDrag(
       details,
-      (_expandedHeight - style.collapsedPanelHeight).abs(),
+      (_expandedHeight - widget.style.collapsedPanelHeight).abs(),
     );
 
     final panel = _Panel(
       neededAlertTopSafeArea: _neededAlertTopSafeArea,
       mediaQuery: mediaQuery,
       alertsState: _alertsState,
-      style: style,
-      duration: style.duration,
-      curve: style.curve,
+      style: widget.style,
+      duration: widget.style.duration,
+      curve: widget.style.curve,
       controller: controller,
       collapsedPanel: collapsedPanel,
       bottomBarHeight: widget.bottomBar.preferredSize.height,
@@ -367,7 +408,7 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
     final body = _Body(
       controller: controller,
       alertsState: _alertsState,
-      style: style,
+      style: widget.style,
       child: widget.body,
     );
 
@@ -397,8 +438,8 @@ class PanelFrameState extends State<PanelFrame> with TickerProviderStateMixin {
       },
       child: CleanProvider(
         data: this,
-        child: _PanelFrame(
-          style: style,
+        child: _PanelFrameLayout(
+          style: widget.style,
           theme: theme,
           safe: safe,
           body: body,

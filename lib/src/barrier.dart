@@ -7,7 +7,7 @@ class _Barrier extends StatelessWidget {
     required this.closePanel,
   });
 
-  final PanelFrameStyle style;
+  final PanelFrameStyleData style;
   final AnimationController controller;
   final VoidCallback closePanel;
 

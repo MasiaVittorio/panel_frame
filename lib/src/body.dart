@@ -10,7 +10,7 @@ class _Body extends StatelessWidget {
 
   final AnimationController controller;
   final Widget child;
-  final PanelFrameStyle style;
+  final PanelFrameStyleData style;
   final _AlertsState alertsState;
 
   @override

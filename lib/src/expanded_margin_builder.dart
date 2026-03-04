@@ -21,7 +21,7 @@ class _ExpandedMarginBuilder extends StatelessWidget {
 
   final _AlertsState alertsStateValue;
 
-  final PanelFrameStyle style;
+  final PanelFrameStyleData style;
 
   final Duration duration;
   final Curve curve;

@@ -1,6 +1,4 @@
-import 'package:example/components/close_panel_tile.dart';
 import 'package:example/components/full_alert_tile.dart';
-import 'package:example/components/previous_alert_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:panel_frame/panel_frame.dart';
 import 'package:sid_base/sid_base.dart';
@@ -23,8 +21,6 @@ class MyAlert extends StatelessWidget {
             title: Text('Next alert'),
             onTap: next,
           ),
-          PreviousAlertTile(),
-          ClosePanelTile(),
           FullAlertTile(),
         ],
         (

@@ -34,6 +34,7 @@ class FrameAppBar extends StatelessWidget {
     final layout = theme.layout;
     final frame = context.panelFrame;
     final isExpanded = frame.isAppBarExpanded;
+    final isAlert = frame.isShowingAlert;
 
     return Material(
       child: SafeArea(
@@ -81,13 +82,20 @@ class FrameAppBar extends StatelessWidget {
                           context,
                         ).style.merge(theme.textTheme.bodyMedium),
                         textAlign: TextAlign.center,
-                        child: isExpanded.build((context, value) {
+                        child: isAlert.build((context, showing) {
                           return GenericAnimatedBuilder(
-                            value: value ? 1.0 : 0.0,
+                            value: showing ? 0 : 1,
                             child: child,
-                            builder: (context, animatedValue, child) {
+                            builder: (context, value, child) {
+                              final keepSubtitleHidden =
+                                  frame._alertsState.alerts.length == 1 &&
+                                  (!frame
+                                      ._alertsState
+                                      .openedFirstAlertFromExpandedPanel);
                               return FractionallyListed(
-                                value: animatedValue,
+                                value: keepSubtitleHidden
+                                    ? 0
+                                    : openValue.rangeMap(to: (0, value)),
                                 child: child,
                               );
                             },

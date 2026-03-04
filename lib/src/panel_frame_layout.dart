@@ -1,7 +1,7 @@
 part of '../panel_frame.dart';
 
-class _PanelFrame extends StatelessWidget {
-  const _PanelFrame({
+class _PanelFrameLayout extends StatelessWidget {
+  const _PanelFrameLayout({
     required this.style,
     required this.theme,
     required this.safe,
@@ -14,7 +14,7 @@ class _PanelFrame extends StatelessWidget {
     required this.bottomBarHeight,
   });
 
-  final PanelFrameStyle style;
+  final PanelFrameStyleData style;
   final ThemeData theme;
   final EdgeInsets safe;
   final _Body body;

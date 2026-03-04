@@ -7,9 +7,9 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onStyleChange = context.provide<ValueChanged<PanelFrameStyle>>();
+    final onStyleChange = context.provide<ValueChanged<PanelFrameStyleData>>();
 
-    final style = context.panelFrameStyle;
+    final style = PanelFrameStyle.of(context);
 
     final theme = context.theme;
     final layout = theme.layout;
@@ -17,6 +17,22 @@ class SettingsPage extends StatelessWidget {
     return ListView(
       children: {
         (title: 'Panel style', leading: Icon(Icons.fullscreen)): [
+          ListTile(
+            leading: Icon(MdiIcons.borderRadius),
+            title: Text('Collapsed panel height'),
+            trailing: Text(style.collapsedPanelHeight.toString()),
+            onTap: () {
+              onStyleChange(
+                style.copyWith(
+                  collapsedPanelHeight: switch (style.collapsedPanelHeight) {
+                    56 => 64,
+                    64 => 72,
+                    _ => 56,
+                  },
+                ),
+              );
+            },
+          ),
           ListTile(
             leading: Icon(MdiIcons.borderRadius),
             title: Text('Collapsed panel radius'),
@@ -83,7 +99,8 @@ class SettingsPage extends StatelessWidget {
                         when style.collapsedPanelHeight / 2 == over =>
                       (_) => 0,
                     0 => (_) => -layout.margin.large,
-                    _ => PanelFrameStyle.defaultComputeOpenPanelTopBarOverlap,
+                    _ =>
+                      PanelFrameStyleData.defaultComputeOpenPanelTopBarOverlap,
                   },
                 ),
               );

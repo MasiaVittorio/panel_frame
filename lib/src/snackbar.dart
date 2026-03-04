@@ -38,7 +38,7 @@ class _SnackBar extends StatelessWidget {
       return Center(child: SizedBox.shrink());
     }
     final theme = context.theme;
-    final style = context.panelFrameStyle;
+    final style = PanelFrameStyle.of(context);
     final height = style.collapsedPanelHeight;
     final Offset center = Offset(height / 2, height / 2);
     final radius = BorderRadius.circular(

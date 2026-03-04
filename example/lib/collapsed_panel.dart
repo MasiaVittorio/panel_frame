@@ -9,7 +9,7 @@ class CollapsedPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final panelFrame = context.panelFrame;
-    final style = context.panelFrameStyle;
+    final style = PanelFrameStyle.of(context);
 
     return InkWell(
       onTap: panelFrame.openPanel,

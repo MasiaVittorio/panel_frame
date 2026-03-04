@@ -81,7 +81,7 @@ class _AlertsState extends ChangeNotifier {
   }
 
   EdgeInsets resultingExpandedPanelMargin(
-    PanelFrameStyle style,
+    PanelFrameStyleData style,
     BuildContext context,
   ) {
     final focusedAlert = isGoingBackToExpandedPanelFromFirstAlert

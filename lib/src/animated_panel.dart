@@ -110,6 +110,7 @@ class _AnimatedPanel extends StatelessWidget {
                   child: Container(
                     color: Colors.transparent,
                     child: AnimatedSwitchingStack(
+                      forceExpandHorizontally: true,
                       t: value,
                       first: collapsedContents,
                       second: expandedContents,

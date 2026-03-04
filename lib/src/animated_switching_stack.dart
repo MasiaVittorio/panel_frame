@@ -16,6 +16,8 @@ class AnimatedSwitchingStack extends StatelessWidget {
     this.upParallaxForEqualChildren,
     this.rightParallaxForEqualChildren,
     this.onSizesChanged,
+    this.forceExpandHorizontally = false,
+    this.forceExpandVertically = false,
   }) : assert(t >= 0 && t <= 1);
 
   final double t;
@@ -25,6 +27,8 @@ class AnimatedSwitchingStack extends StatelessWidget {
   final double secondParallax;
   final bool? upParallaxForEqualChildren;
   final bool? rightParallaxForEqualChildren;
+  final bool forceExpandHorizontally;
+  final bool forceExpandVertically;
 
   final void Function(Size first, Size second)? onSizesChanged;
 
@@ -32,6 +36,8 @@ class AnimatedSwitchingStack extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRect(
       child: AnimatedSizedStack(
+        forceExpandHorizontally: forceExpandHorizontally,
+        forceExpandVertically: forceExpandVertically,
         firstParallax: firstParallax,
         secondParallax: secondParallax,
         upParallaxForEqualChildren: upParallaxForEqualChildren,
@@ -62,6 +68,8 @@ class AnimatedSizedStack extends MultiChildRenderObjectWidget {
     required this.secondParallax,
     required this.upParallaxForEqualChildren,
     required this.rightParallaxForEqualChildren,
+    required this.forceExpandHorizontally,
+    required this.forceExpandVertically,
   }) : assert(t >= 0 && t <= 1),
        super(children: [first, second]);
 
@@ -71,6 +79,8 @@ class AnimatedSizedStack extends MultiChildRenderObjectWidget {
   final double secondParallax;
   final bool? upParallaxForEqualChildren;
   final bool? rightParallaxForEqualChildren;
+  final bool forceExpandHorizontally;
+  final bool forceExpandVertically;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
@@ -81,6 +91,8 @@ class AnimatedSizedStack extends MultiChildRenderObjectWidget {
       secondParallax: secondParallax,
       upParallaxForEqualChildren: upParallaxForEqualChildren,
       rightParallaxForEqualChildren: rightParallaxForEqualChildren,
+      forceExpandHorizontally: forceExpandHorizontally,
+      forceExpandVertically: forceExpandVertically,
     );
   }
 
@@ -95,6 +107,8 @@ class AnimatedSizedStack extends MultiChildRenderObjectWidget {
     renderObject.secondParallax = secondParallax;
     renderObject.upParallaxForEqualChildren = upParallaxForEqualChildren;
     renderObject.rightParallaxForEqualChildren = rightParallaxForEqualChildren;
+    renderObject.forceExpandHorizontally = forceExpandHorizontally;
+    renderObject.forceExpandVertically = forceExpandVertically;
   }
 }
 
@@ -111,11 +125,15 @@ class RenderAnimatedSizedStack extends RenderBox
     required double secondParallax,
     required bool? upParallaxForEqualChildren,
     required bool? rightParallaxForEqualChildren,
+    required bool forceExpandHorizontally,
+    required bool forceExpandVertically,
   }) : _t = t,
        _firstParallax = firstParallax,
        _upParallaxForEqualChildren = upParallaxForEqualChildren,
        _rightParallaxForEqualChildren = rightParallaxForEqualChildren,
-       _secondParallax = secondParallax;
+       _secondParallax = secondParallax,
+       _forceExpandHorizontally = forceExpandHorizontally,
+       _forceExpandVertically = forceExpandVertically;
 
   void Function(Size first, Size second)? onSizesChanged;
 
@@ -141,6 +159,22 @@ class RenderAnimatedSizedStack extends RenderBox
   set rightParallaxForEqualChildren(bool? value) {
     if (_rightParallaxForEqualChildren == value) return;
     _rightParallaxForEqualChildren = value;
+    markNeedsLayout();
+  }
+
+  bool get forceExpandHorizontally => _forceExpandHorizontally;
+  bool _forceExpandHorizontally;
+  set forceExpandHorizontally(bool value) {
+    if (_forceExpandHorizontally == value) return;
+    _forceExpandHorizontally = value;
+    markNeedsLayout();
+  }
+
+  bool get forceExpandVertically => _forceExpandVertically;
+  bool _forceExpandVertically;
+  set forceExpandVertically(bool value) {
+    if (_forceExpandVertically == value) return;
+    _forceExpandVertically = value;
     markNeedsLayout();
   }
 
@@ -186,6 +220,13 @@ class RenderAnimatedSizedStack extends RenderBox
     // Interpolate dimensions between the two children using t
     double chosenWidth = sizeA.width + (sizeB.width - sizeA.width) * _t;
     double chosenHeight = sizeA.height + (sizeB.height - sizeA.height) * _t;
+
+    if (_forceExpandHorizontally) {
+      chosenWidth = sizeA.width > sizeB.width ? sizeA.width : sizeB.width;
+    }
+    if (_forceExpandVertically) {
+      chosenHeight = sizeA.height > sizeB.height ? sizeA.height : sizeB.height;
+    }
 
     // Constrain to incoming constraints
     Size computed = constraints.constrain(Size(chosenWidth, chosenHeight));

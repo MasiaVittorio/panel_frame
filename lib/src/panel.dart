@@ -27,7 +27,7 @@ class _Panel extends StatelessWidget {
   final ValueChanged<Size> onTargetAlertSizeChanged;
   final ValueChanged<Size> onPanelSizeChanged;
   final _AlertsState alertsState;
-  final PanelFrameStyle style;
+  final PanelFrameStyleData style;
   final Duration duration;
   final Curve curve;
   final AnimationController controller;
@@ -105,6 +105,7 @@ class _Panel extends StatelessWidget {
             child: expandedPanelAlertContents,
             builder: (context, value, child) {
               return AnimatedSwitchingStack(
+                forceExpandHorizontally: true,
                 upParallaxForEqualChildren: true,
                 onSizesChanged: (first, second) {
                   if (panelOrAlertTarget > 0.5) {

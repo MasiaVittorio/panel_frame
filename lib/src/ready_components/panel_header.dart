@@ -16,7 +16,7 @@ class PanelHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.theme;
     final layout = theme.layout;
-    final style = context.panelFrameStyle;
+    final style = PanelFrameStyle.of(context);
     final showDragHandle = this.showDragHandle ?? style.showDragHandleInHeaders;
     final panelFrame = context.panelFrame;
     final canGoBack =
@@ -27,7 +27,7 @@ class PanelHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: InkWell(
-          onTap: panelFrame.togglePanel,
+          onTap: panelFrame.previousAlert,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

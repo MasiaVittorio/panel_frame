@@ -47,8 +47,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 extension OnStyleChanged on BuildContext {
-  void changePanelStyle(PanelFrameStyle value) =>
-      provide<ValueChanged<PanelFrameStyle>>()(value);
+  void changePanelStyle(PanelFrameStyleData value) =>
+      provide<ValueChanged<PanelFrameStyleData>>()(value);
 
   void changeBodyPage(BodyPage value) =>
       provide<ValueChanged<BodyPage>>()(value);
@@ -69,20 +69,18 @@ enum BodyPage {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  PanelFrameStyle style = PanelFrameStyle(
+  PanelFrameStyleData style = PanelFrameStyleData(
     collapsedPanelHeight: 56,
     fullScreenExpandedPanel: true,
     expandedPanelMargin: (_) => EdgeInsets.zero,
     expandedPanelBorderRadius: (_) => 0,
     computeOpenPanelTopBarOverlap: (_) => 0,
     collapsedPanelBorderRadius: (_) => 28,
-    collapsedPanelBorderSide: (context) =>
-        BorderSide(color: context.theme.colorScheme.outlineVariant, width: 1),
     collapsedPanelBackgroundColor: (context) =>
-        context.theme.colorScheme.surface,
+        context.theme.colorScheme.surfaceContainer,
   );
 
-  void onStyleChanged(PanelFrameStyle value) {
+  void onStyleChanged(PanelFrameStyleData value) {
     setState(() {
       style = value;
     });
@@ -103,7 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
       child: CleanProvider(
         data: onStyleChanged,
         child: PanelFrame(
-          style: style,
+          style: style.copyWith(duration: 3.seconds),
           collapsedPanel: const CollapsedPanel(),
           expandedPanel: const ExpandedPanel(),
           body: MyBody(page: page),

@@ -11,7 +11,7 @@ class _BottomBar extends StatelessWidget {
 
   final double bottomBarHeight;
   final EdgeInsets safe;
-  final PanelFrameStyle style;
+  final PanelFrameStyleData style;
   final MediaQueryData mediaQuery;
   final Widget child;
 
