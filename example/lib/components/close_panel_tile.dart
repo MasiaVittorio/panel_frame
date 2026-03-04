@@ -7,8 +7,8 @@ class ClosePanelTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(Icons.close),
-      title: Text('Close panel'),
+      leading: const Icon(Icons.close),
+      title: const Text('Close panel'),
       onTap: context.panelFrame.closePanel,
     );
   }

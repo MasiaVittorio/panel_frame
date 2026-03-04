@@ -11,12 +11,12 @@ class AlertsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: {
-        (title: 'Navigation', leading: Icon(Icons.compare_arrows_sharp)): [
-          OpenPanelTile(),
+        (title: 'Navigation', leading: const Icon(Icons.compare_arrows_sharp)): [
+          const OpenPanelTile(),
         ],
-        (title: 'Alerts', leading: Icon(Icons.warning_outlined)): [
-          SmallAlertTile(),
-          FullAlertTile(),
+        (title: 'Alerts', leading: const Icon(Icons.warning_outlined)): [
+          const SmallAlertTile(),
+          const FullAlertTile(),
         ],
       }.groupedCards(),
     );

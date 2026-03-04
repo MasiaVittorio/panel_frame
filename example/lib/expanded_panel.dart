@@ -1,8 +1,6 @@
-import 'package:example/components/close_panel_tile.dart';
-import 'package:example/components/full_alert_tile.dart';
-import 'package:example/components/small_alert_tile.dart';
+import 'package:example/main.dart';
+import 'package:example/pages/panel_theme_page.dart';
 import 'package:flutter/material.dart';
-import 'package:panel_frame/panel_frame.dart';
 import 'package:sid_base/sid_base.dart';
 
 class ExpandedPanel extends StatelessWidget {
@@ -10,20 +8,48 @@ class ExpandedPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        PanelHeader(),
-        ...{
-          (title: 'Navigation', leading: Icon(Icons.compare_arrows_sharp)): [
-            ClosePanelTile(),
-          ],
-          (title: 'Alerts', leading: Icon(Icons.warning_outlined)): [
-            SmallAlertTile(),
-            FullAlertTile(),
-          ],
-        }.groupedCards(),
-      ],
-    );
+    final pageVar = context.provide<Reactive<PanelPage>>();
+    return pageVar.build((context, value) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: AnimatedPagedView(
+              value: value,
+              pages: [
+                ViewPage(child: const Placeholder(), value: PanelPage.alerts),
+                ViewPage(child: const Placeholder(), value: PanelPage.settings),
+                ViewPage(child: const PanelThemePage(), value: PanelPage.theme),
+              ],
+            ),
+          ),
+          HorizontalNavigationBar(
+            value: value,
+            onChanged: pageVar.update,
+            items: [
+              const HorizontalNavigationItem(
+                value: PanelPage.alerts,
+                label: Text('Alerts'),
+                selectedIcon: Icon(Icons.notifications),
+                unselectedIcon: Icon(Icons.notifications_outlined),
+              ),
+              const HorizontalNavigationItem(
+                value: PanelPage.settings,
+                label: Text('Settings'),
+                selectedIcon: Icon(Icons.settings),
+                unselectedIcon: Icon(Icons.settings_outlined),
+              ),
+              const HorizontalNavigationItem(
+                value: PanelPage.theme,
+                label: Text('Theme'),
+                selectedIcon: Icon(Icons.color_lens),
+                unselectedIcon: Icon(Icons.color_lens_outlined),
+              ),
+            ],
+          ),
+        ],
+      );
+    });
   }
 }

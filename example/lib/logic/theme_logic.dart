@@ -24,9 +24,8 @@ class ThemeLogic extends ThemeLogicBase {
   @override
   ThemeData applyAppCustomizations(ThemeData theme) {
     final scaffoldBackgroundColor = theme.brightness.isLight
-        ? Color(0xfff8f8f8)
+        ? const Color(0xfff8f8f8)
         : theme.scaffoldBackgroundColor;
-    final layout = Layout.defaultLayout;
 
     return theme.copyWith(
       scaffoldBackgroundColor: scaffoldBackgroundColor,
@@ -60,9 +59,9 @@ class ThemeLogic extends ThemeLogicBase {
           fontWeight: FontWeight.w400,
           color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
         ),
-        minVerticalPadding: layout.margin.medium,
+        minVerticalPadding: Layout.defaultLayout.margin.medium,
       ),
-      extensions: [layout],
+      extensions: [Layout.defaultLayout],
     );
   }
 }

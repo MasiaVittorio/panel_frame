@@ -1,6 +1,7 @@
 import 'package:example/body.dart';
 import 'package:example/bottom_bar.dart';
 import 'package:example/collapsed_panel.dart';
+import 'package:example/components/app_bar_panel_subtitle.dart';
 import 'package:example/components/app_bar_title.dart';
 import 'package:example/expanded_panel.dart';
 import 'package:example/logic/theme_logic.dart';
@@ -12,14 +13,9 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ThemeLogicProvider(
@@ -30,7 +26,7 @@ class _MyAppState extends State<MyApp> {
           themeMode: themeMode,
           theme: lightTheme,
           darkTheme: darkTheme,
-          home: MyHomePage(title: 'Flutter Demo Home Page'),
+          home: const MyHomePage(),
         );
       },
     );
@@ -38,9 +34,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -49,26 +43,11 @@ class MyHomePage extends StatefulWidget {
 extension OnStyleChanged on BuildContext {
   void changePanelStyle(PanelFrameStyleData value) =>
       provide<ValueChanged<PanelFrameStyleData>>()(value);
-
-  void changeBodyPage(BodyPage value) =>
-      provide<ValueChanged<BodyPage>>()(value);
 }
 
-enum BodyPage {
-  alerts,
-  snackbars,
-  theme,
-  more,
-  settings;
+enum BodyPage { alerts, snackbars, theme, more, settings }
 
-  IconData get icon => switch (this) {
-    BodyPage.alerts => Icons.warning_outlined,
-    BodyPage.snackbars => Icons.notifications_outlined,
-    BodyPage.theme => Icons.palette_outlined,
-    BodyPage.settings => Icons.settings_outlined,
-    BodyPage.more => Icons.more_horiz,
-  };
-}
+enum PanelPage { theme, alerts, settings }
 
 class _MyHomePageState extends State<MyHomePage> {
   PanelFrameStyleData style = PanelFrameStyleData(
@@ -82,41 +61,40 @@ class _MyHomePageState extends State<MyHomePage> {
         context.theme.colorScheme.surfaceContainer,
   );
 
-  void onStyleChanged(PanelFrameStyleData value) {
-    setState(() {
-      style = value;
-    });
-  }
+  void onStyleChanged(PanelFrameStyleData value) =>
+      setState(() => style = value);
 
-  BodyPage page = BodyPage.alerts;
+  Reactive<BodyPage> page = Reactive(BodyPage.alerts);
+  Reactive<PanelPage> panelPage = Reactive(PanelPage.theme);
 
-  void onPageChanged(BodyPage value) {
-    setState(() {
-      page = value;
-    });
+  @override
+  void dispose() {
+    page.dispose();
+    panelPage.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return CleanProvider(
-      data: onPageChanged,
+      data: onStyleChanged,
       child: CleanProvider(
-        data: onStyleChanged,
-        child: PanelFrame(
-          // style: style.copyWith(duration: 3.seconds),
-          style: style,
-          collapsedPanel: const CollapsedPanel(),
-          expandedPanel: const ExpandedPanel(),
-          body: MyBody(page: page),
-          topBarChild: const AppBarTitle(),
-          topBarBuilder: (_, child, openValue) {
-            return FrameAppBar(
+        data: panelPage,
+        child: CleanProvider(
+          data: page,
+          child: PanelFrame(
+            style: style,
+            collapsedPanel: const CollapsedPanel(),
+            expandedPanel: const ExpandedPanel(),
+            body: const MyBody(),
+            topBarChild: const AppBarTitle(),
+            topBarBuilder: (context, child, openValue) => FrameAppBar(
               title: child!,
               openValue: openValue,
-              panelSubtitle: Text("Panel subtitle"),
-            );
-          },
-          bottomBar: MyBottomBar(page: page, onPageChanged: onPageChanged),
+              panelSubtitle: const AppBarPanelSubtitle(),
+            ),
+            bottomBar: const MyBottomBar(),
+          ),
         ),
       ),
     );

@@ -23,7 +23,7 @@ class ContrastSlider extends StatelessWidget {
         titleAlignment: ListTileTitleAlignment.bottom,
         trailing: IconButton(
           onPressed: () => onChanged(0),
-          icon: Icon(Icons.restart_alt),
+          icon: const Icon(Icons.restart_alt),
         ),
         title: Text(
           'Contrast value: '.todo +
@@ -39,7 +39,7 @@ class ContrastSlider extends StatelessWidget {
               },
         ),
         subtitle: Slider(
-          padding: EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.only(top: 8),
           value: value,
           min: -1,
           max: 1,

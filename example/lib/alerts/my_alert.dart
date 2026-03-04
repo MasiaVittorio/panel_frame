@@ -15,19 +15,22 @@ class MyAlert extends StatelessWidget {
     return HeaderedList(
       height: height,
       children: {
-        (title: 'Navigation', leading: Icon(Icons.compare_arrows_sharp)): [
+        (
+          title: 'Navigation',
+          leading: const Icon(Icons.compare_arrows_sharp),
+        ): [
           ListTile(
-            leading: Icon(Icons.keyboard_arrow_right),
-            title: Text('Next alert'),
+            leading: const Icon(Icons.keyboard_arrow_right),
+            title: const Text('Next alert'),
             onTap: next,
           ),
-          FullAlertTile(),
+          const FullAlertTile(),
         ],
         (
           title: 'More space',
-          leading: Icon(Icons.vertical_align_center_outlined),
+          leading: const Icon(Icons.vertical_align_center_outlined),
         ): [
-          Space.vertical(600),
+          const Space.vertical(600),
         ],
       }.groupedCards(),
     );

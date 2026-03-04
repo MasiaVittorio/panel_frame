@@ -21,7 +21,7 @@ class VariantTile extends StatelessWidget {
       return ListTile(
         trailing: IconButton(
           onPressed: () => onChanged(DynamicSchemeVariant.tonalSpot),
-          icon: Icon(Icons.restart_alt),
+          icon: const Icon(Icons.restart_alt),
         ),
         title: Text('Dynamic scheme variant'.todo),
         subtitle: Text(value.name.capitalizeFirst),

@@ -10,9 +10,9 @@ class SmallAlertTile extends StatelessWidget {
     final panelFrame = context.panelFrame;
 
     return ListTile(
-      leading: Icon(Icons.horizontal_split_rounded),
-      title: Text('Show smaller alert'),
-      onTap: () => panelFrame.showAlert(MyAlert(height: 400)),
+      leading: const Icon(Icons.horizontal_split_rounded),
+      title: const Text('Show smaller alert'),
+      onTap: () => panelFrame.showAlert(const MyAlert(height: 400)),
     );
   }
 }

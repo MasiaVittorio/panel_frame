@@ -12,14 +12,14 @@ class ColorSourceSlider extends StatelessWidget {
     return themeLogic.useDynamic.build((context, value) {
       return SegmentedSlider<bool>(
         segments: [
-          SliderSegment(
+          const SliderSegment(
             value: true,
             label: Text("Device"),
             unselectedIcon: Icon(Icons.smartphone_outlined),
           ),
           SliderSegment(
             value: false,
-            label: Text("Manual"),
+            label: const Text("Manual"),
             unselectedIcon: Icon(MdiIcons.eyedropper),
           ),
         ],

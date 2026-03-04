@@ -8,21 +8,21 @@ import 'pages/alerts_page.dart';
 import 'pages/theme_page.dart';
 
 class MyBody extends StatelessWidget {
-  const MyBody({super.key, required this.page});
-
-  final BodyPage page;
+  const MyBody({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedPagedView(
-      value: page,
-      pages: [
-        ViewPage(value: BodyPage.theme, child: ThemePage()),
-        ViewPage(value: BodyPage.alerts, child: AlertsPage()),
-        ViewPage(value: BodyPage.snackbars, child: SnackBarsPage()),
-        ViewPage(value: BodyPage.settings, child: SettingsPage()),
-        ViewPage(value: BodyPage.more, child: Container()),
-      ],
-    );
+    return context.provide<Reactive<BodyPage>>().build((context, value) {
+      return AnimatedPagedView(
+        value: value,
+        pages: [
+          ViewPage(value: BodyPage.theme, child: const ThemePage()),
+          ViewPage(value: BodyPage.alerts, child: const AlertsPage()),
+          ViewPage(value: BodyPage.snackbars, child: const SnackBarsPage()),
+          ViewPage(value: BodyPage.settings, child: const SettingsPage()),
+          ViewPage(value: BodyPage.more, child: Container()),
+        ],
+      );
+    });
   }
 }

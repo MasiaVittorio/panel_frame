@@ -10,14 +10,14 @@ class SnackBarsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: {
-        (title: 'Navigation', leading: Icon(Icons.compare_arrows_sharp)): [
-          OpenPanelTile(),
+        (title: 'Navigation', leading: const Icon(Icons.compare_arrows_sharp)): [
+          const OpenPanelTile(),
         ],
-        (title: 'Snackbars', leading: Icon(Icons.keyboard_arrow_right)): [
+        (title: 'Snackbars', leading: const Icon(Icons.keyboard_arrow_right)): [
           ListTile(
-            title: Text("Show Snackbar"),
+            title: const Text("Show Snackbar"),
             onTap: () => context.panelFrame.showSnackBar(
-              PanelSnackBar(child: Icon(Icons.add)),
+              PanelSnackBar(child: const Icon(Icons.add)),
             ),
           ),
         ],

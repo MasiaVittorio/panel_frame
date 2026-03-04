@@ -14,17 +14,17 @@ class ThemePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        SectionTitle(
+        const SectionTitle(
           title: Text('Brightness'),
           leading: Icon(Icons.brightness_4_outlined),
         ),
-        ThemeModeSwitch(),
-        SectionTitle(
+        const ThemeModeSwitch(),
+        const SectionTitle(
           title: Text('Color source'),
           leading: Icon(Icons.palette_outlined),
         ),
-        ColorSourceSlider(),
-        SectionTitle(title: Text('Style'), leading: Icon(Icons.style_outlined)),
+        const ColorSourceSlider(),
+        const SectionTitle(title: Text('Style'), leading: Icon(Icons.style_outlined)),
         context.themeLogic.useDynamic.build((context, useDynamic) {
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -32,7 +32,7 @@ class ThemePage extends StatelessWidget {
             children: [
               AnimatedListed(
                 listed: !useDynamic,
-                child: GroupedCard(
+                child: const GroupedCard(
                   isLast: false,
                   isFirst: true,
                   child: ColorPickerTile(),
@@ -41,9 +41,9 @@ class ThemePage extends StatelessWidget {
               GroupedCard(
                 isLast: false,
                 isFirst: useDynamic,
-                child: VariantTile(),
+                child: const VariantTile(),
               ),
-              GroupedCard(
+              const GroupedCard(
                 isLast: true,
                 isFirst: false,
                 child: ContrastSlider(),

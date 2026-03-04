@@ -15,7 +15,7 @@ class CollapsedPanel extends StatelessWidget {
       onTap: panelFrame.openPanel,
       child: Stack(
         children: [
-          Center(child: PanelDragHandle()),
+          const Center(child: PanelDragHandle()),
           Positioned(
             left: 0,
             width: style.collapsedPanelHeight,
@@ -23,8 +23,9 @@ class CollapsedPanel extends StatelessWidget {
             bottom: 0,
             child: Center(
               child: IconButton(
-                onPressed: () => panelFrame.showAlert(MyAlert(height: 400)),
-                icon: Icon(Icons.horizontal_split_rounded),
+                onPressed: () =>
+                    panelFrame.showAlert(const MyAlert(height: 400)),
+                icon: const Icon(Icons.horizontal_split_rounded),
                 style: FrameAppBar.buttonStyle(context.theme),
               ),
             ),
@@ -38,16 +39,16 @@ class CollapsedPanel extends StatelessWidget {
               child: IconButton(
                 onPressed: () => panelFrame.showSnackBar(
                   PanelSnackBar(
-                    child: Text(
+                    child: const Text(
                       'This is a message from the snackbar! Pretty long, huh?',
                     ),
                     action: PanelSnackBarAction(
-                      icon: Icon(Icons.check),
+                      icon: const Icon(Icons.check),
                       onPressed: panelFrame.closeSnackBar,
                     ),
                   ),
                 ),
-                icon: Icon(Icons.check),
+                icon: const Icon(Icons.check),
                 style: FrameAppBar.buttonStyle(context.theme),
               ),
             ),

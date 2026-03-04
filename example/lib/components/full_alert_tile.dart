@@ -10,9 +10,9 @@ class FullAlertTile extends StatelessWidget {
     final panelFrame = context.panelFrame;
 
     return ListTile(
-      leading: Icon(Icons.fullscreen),
-      title: Text('Show full screen'),
-      onTap: () => panelFrame.showAlert(FullScreenAlert()),
+      leading: const Icon(Icons.fullscreen),
+      title: const Text('Show full screen'),
+      onTap: () => panelFrame.showAlert(const FullScreenAlert()),
     );
   }
 }

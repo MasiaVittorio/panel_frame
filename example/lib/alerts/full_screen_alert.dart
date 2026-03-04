@@ -17,13 +17,12 @@ class FullScreenAlert extends StatelessWidget implements PanelAlertWidget {
   Widget build(BuildContext context) {
     return HeaderedList(
       children: {
-        (title: 'Alerts', leading: Icon(Icons.warning_outlined)): [
-          SmallAlertTile(),
-          FullAlertTile(),
+        (title: 'Alerts', leading: const Icon(Icons.warning_outlined)): [
+          const SmallAlertTile(),
+          const FullAlertTile(),
         ],
-        (title: 'More space', leading: Icon(Icons.vertical_align_center)): [
-          Space.vertical(700),
-        ],
+        (title: 'More space', leading: const Icon(Icons.vertical_align_center)):
+            [const Space.vertical(700)],
       }.groupedCards(),
     );
   }

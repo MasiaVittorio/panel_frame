@@ -16,10 +16,10 @@ class SettingsPage extends StatelessWidget {
 
     return ListView(
       children: {
-        (title: 'Panel style', leading: Icon(Icons.fullscreen)): [
+        (title: 'Panel style', leading: const Icon(Icons.fullscreen)): [
           ListTile(
             leading: Icon(MdiIcons.borderRadius),
-            title: Text('Collapsed panel height'),
+            title: const Text('Collapsed panel height'),
             trailing: Text(style.collapsedPanelHeight.toString()),
             onTap: () {
               onStyleChange(
@@ -35,7 +35,7 @@ class SettingsPage extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(MdiIcons.borderRadius),
-            title: Text('Collapsed panel radius'),
+            title: const Text('Collapsed panel radius'),
             trailing: Text(
               style.collapsedPanelBorderRadius(context).toString(),
             ),
@@ -53,7 +53,7 @@ class SettingsPage extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(MdiIcons.borderRadius),
-            title: Text('Expanded panel radius'),
+            title: const Text('Expanded panel radius'),
             trailing: Text(style.expandedPanelBorderRadius(context).toString()),
             onTap: () {
               onStyleChange(
@@ -68,7 +68,7 @@ class SettingsPage extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(MdiIcons.panHorizontal),
-            title: Text('Expanded panel margin'),
+            title: const Text('Expanded panel margin'),
             trailing: Text(style.expandedPanelMargin(context).left.toString()),
             onTap: () {
               onStyleChange(
@@ -88,7 +88,7 @@ class SettingsPage extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(MdiIcons.panVertical),
-            title: Text('panel / app bar overlap'),
+            title: const Text('panel / app bar overlap'),
             trailing: Text(style.openPanelTopBarOverlap.toString()),
             onTap: () {
               onStyleChange(

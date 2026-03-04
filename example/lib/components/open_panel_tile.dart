@@ -7,8 +7,8 @@ class OpenPanelTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(Icons.keyboard_arrow_up),
-      title: Text('Open panel'),
+      leading: const Icon(Icons.keyboard_arrow_up),
+      title: const Text('Open panel'),
       onTap: context.panelFrame.openPanel,
     );
   }

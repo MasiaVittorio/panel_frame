@@ -7,8 +7,8 @@ class PreviousAlertTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(Icons.keyboard_arrow_left),
-      title: Text('Previous alert'),
+      leading: const Icon(Icons.keyboard_arrow_left),
+      title: const Text('Previous alert'),
       onTap: context.panelFrame.previousAlert,
     );
   }
