@@ -37,7 +37,15 @@ class CollapsedPanel extends StatelessWidget {
             child: Center(
               child: IconButton(
                 onPressed: () => panelFrame.showSnackBar(
-                  PanelSnackBar(child: Icon(Icons.add)),
+                  PanelSnackBar(
+                    child: Text(
+                      'This is a message from the snackbar! Pretty long, huh?',
+                    ),
+                    action: PanelSnackBarAction(
+                      icon: Icon(Icons.check),
+                      onPressed: panelFrame.closeSnackBar,
+                    ),
+                  ),
                 ),
                 icon: Icon(Icons.check),
                 style: FrameAppBar.buttonStyle(context.theme),

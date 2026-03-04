@@ -101,7 +101,8 @@ class _MyHomePageState extends State<MyHomePage> {
       child: CleanProvider(
         data: onStyleChanged,
         child: PanelFrame(
-          style: style.copyWith(duration: 3.seconds),
+          // style: style.copyWith(duration: 3.seconds),
+          style: style,
           collapsedPanel: const CollapsedPanel(),
           expandedPanel: const ExpandedPanel(),
           body: MyBody(page: page),

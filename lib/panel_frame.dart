@@ -183,6 +183,10 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
   void _listener() {
     if (controller.value >= openedThreshold) {
       isMostlyOpened.update(true);
+      if (snackbarAnimationController.value > 0 &&
+          !snackbarAnimationController.isAnimating) {
+        closeSnackBar();
+      }
     } else if (controller.value < closedThreshold) {
       isMostlyOpened.update(false);
     }
