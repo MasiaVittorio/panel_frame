@@ -47,6 +47,12 @@ class MyBottomBar extends StatelessWidget implements PreferredSizeWidget {
           selectedIcon: Icon(Icons.settings),
           unselectedIcon: Icon(Icons.settings_outlined),
         ),
+        HorizontalNavigationItem(
+          value: BodyPage.more,
+          label: Text('More'),
+          selectedIcon: Icon(Icons.more_horiz),
+          unselectedIcon: Icon(Icons.more_horiz),
+        ),
       ],
     );
   }

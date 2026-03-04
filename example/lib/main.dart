@@ -58,6 +58,7 @@ enum BodyPage {
   alerts,
   snackbars,
   theme,
+  more,
   settings;
 
   IconData get icon => switch (this) {
@@ -65,6 +66,7 @@ enum BodyPage {
     BodyPage.snackbars => Icons.notifications_outlined,
     BodyPage.theme => Icons.palette_outlined,
     BodyPage.settings => Icons.settings_outlined,
+    BodyPage.more => Icons.more_horiz,
   };
 }
 

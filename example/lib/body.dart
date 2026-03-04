@@ -21,6 +21,7 @@ class MyBody extends StatelessWidget {
         ViewPage(value: BodyPage.alerts, child: AlertsPage()),
         ViewPage(value: BodyPage.snackbars, child: SnackBarsPage()),
         ViewPage(value: BodyPage.settings, child: SettingsPage()),
+        ViewPage(value: BodyPage.more, child: Container()),
       ],
     );
   }

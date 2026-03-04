@@ -58,37 +58,39 @@ class _SnackBar extends StatelessWidget {
 
     final Widget insideContent = Pad(
       horizontal: layout.padding.medium,
-      child: DefaultTextStyle(
-        style: DefaultTextStyle.of(context).style.merge(
-          theme.textTheme.bodyMedium!.copyWith(
-            color: theme.colorScheme.onPrimaryContainer,
-          ),
-        ),
-        textAlign: TextAlign.center,
-        child: IconTheme(
-          data: IconTheme.of(
-            context,
-          ).copyWith(color: theme.colorScheme.onPrimaryContainer),
-          child: Center(child: snackBar.child),
-        ),
-      ),
+      child: Center(child: snackBar.child),
     );
 
-    final content = Row(
-      children: [
-        if (snackBar.action case PanelSnackBarAction action)
-          BiggestSquare(
-            child: InkResponse(
-              highlightColor: Colors.transparent,
-              containedInkWell: false,
-              borderRadius: radius,
-              onTap: action.onPressed,
-              child: Center(child: action.icon),
-            ),
-          ),
-        snackBar.scrollable ? insideContent : Expanded(child: insideContent),
-        BiggestSquare(),
-      ].modalReversed(snackBar.fromLeft),
+    final content = DefaultTextStyle(
+      style: DefaultTextStyle.of(context).style.merge(
+        theme.textTheme.bodyMedium!.copyWith(
+          color: theme.colorScheme.onPrimaryContainer,
+        ),
+      ),
+      textAlign: TextAlign.center,
+      child: IconTheme(
+        data: IconTheme.of(
+          context,
+        ).copyWith(color: theme.colorScheme.onPrimaryContainer),
+        child: Row(
+          children: [
+            if (snackBar.action case PanelSnackBarAction action)
+              BiggestSquare(
+                child: InkResponse(
+                  highlightColor: Colors.transparent,
+                  containedInkWell: false,
+                  borderRadius: radius,
+                  onTap: action.onPressed,
+                  child: Center(child: action.icon),
+                ),
+              ),
+            snackBar.scrollable
+                ? insideContent
+                : Expanded(child: insideContent),
+            BiggestSquare(),
+          ].modalReversed(snackBar.fromLeft),
+        ),
+      ),
     );
 
     return AnimatedBuilder(
