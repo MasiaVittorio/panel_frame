@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:call_to_action/call_to_action.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:keyboard_insets/keyboard_insets.dart';
 import 'package:panel_frame/panel_frame.dart';
+import 'package:panel_frame/src/override_media_query_padding.dart';
 import 'package:segmented_slider/segmented_slider.dart';
 import 'package:sid_base/sid_base.dart';
 
@@ -25,9 +28,12 @@ part 'src/panel_frame_logic.dart';
 part 'src/panel_frame_style.dart';
 part 'src/panel_frame_style_data.dart';
 part 'src/proportional_stack.dart';
+part 'src/ready_components/alternatives_panel_alert.dart';
 part 'src/ready_components/color_picker_panel.dart';
+part 'src/ready_components/confirm_panel_alert.dart';
 part 'src/ready_components/frame_app_bar.dart';
 part 'src/ready_components/headered_list.dart';
+part 'src/ready_components/insert_panel_alert.dart';
 part 'src/ready_components/panel_header.dart';
 part 'src/ready_components/theme_variant_picker.dart';
 part 'src/snackbar.dart';
@@ -39,6 +45,7 @@ extension PanelFrameStateExtension on BuildContext {
 }
 
 class PanelFrame extends StatelessWidget {
+  static PanelFrame of(BuildContext context) => context.provide<PanelFrame>();
   const PanelFrame({
     super.key,
     required this.collapsedPanel,
@@ -107,8 +114,8 @@ class _PanelFrame extends StatefulWidget {
 }
 
 class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
-  late AnimationController controller;
-  late AnimationController snackbarAnimationController;
+  late AnimationController _controller;
+  late AnimationController _snackbarAnimationController;
 
   /// this is updated by the proportional stack inside [_ExpandedPanelAlertContents]
   /// and is used by the gestures to drive the open / close value of the animation based on the movement of the finger relative to the size of the alert
@@ -116,9 +123,9 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
 
   final _AlertsState _alertsState = _AlertsState();
 
-  late final Reactive<bool> isMostlyOpened;
-  late final Reactive<bool> isAppBarExpanded;
-  late final Reactive<bool> isShowingAlert;
+  late final Reactive<bool> _isMostlyOpened;
+  late final Reactive<bool> _isAppBarExpanded;
+  late final Reactive<bool> _isShowingAlert;
   late final Reactive<double> _neededAlertTopSafeArea;
 
   PanelSnackBar? _snackBar;
@@ -127,10 +134,10 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    isMostlyOpened = Reactive(false);
-    isShowingAlert = Reactive(false);
+    _isMostlyOpened = Reactive(false);
+    _isShowingAlert = Reactive(false);
     _neededAlertTopSafeArea = Reactive(0);
-    controller = AnimationController(
+    _controller = AnimationController(
       vsync: this,
       duration: widget.style.duration,
       lowerBound: 0,
@@ -138,7 +145,7 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
       debugLabel: 'Panel open value',
       value: 0,
     );
-    snackbarAnimationController = AnimationController(
+    _snackbarAnimationController = AnimationController(
       vsync: this,
       duration: widget.style.duration,
       lowerBound: 0,
@@ -146,20 +153,21 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
       debugLabel: 'Snackbar animation',
       value: 0,
     );
-    controller.addListener(_listener);
-    isAppBarExpanded = isMostlyOpened.related(
+    _controller.addListener(_listener);
+    _isAppBarExpanded = _isMostlyOpened.related(
       (value) => value && !_alertsState.isShowingAlert,
     );
     _alertsState.addListener(_updateIsAppBarExpanded);
   }
 
   void _updateIsAppBarExpanded() {
-    isShowingAlert.update(
+    _isShowingAlert.update(
       _alertsState.isShowingAlert &&
-          !(_alertsState.isAnimatingBack && _alertsState.alerts.length == 1),
+          !(_alertsState.getAnimatingBack &&
+              _alertsState.howManyCurrentAlerts == 1),
     );
-    isAppBarExpanded.update(
-      isMostlyOpened.value &&
+    _isAppBarExpanded.update(
+      _isMostlyOpened.value &&
           ((!_alertsState.isShowingAlert) ||
               _alertsState.isGoingBackToExpandedPanelFromFirstAlert),
     );
@@ -167,37 +175,44 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    controller.removeListener(_listener);
-    snackbarAnimationController.dispose();
-    controller.dispose();
-    isMostlyOpened.dispose();
-    isShowingAlert.dispose();
-    isAppBarExpanded.dispose();
+    _controller.removeListener(_listener);
+    _snackbarAnimationController.dispose();
+    _controller.dispose();
+    _isMostlyOpened.dispose();
+    _isShowingAlert.dispose();
+    _isAppBarExpanded.dispose();
     _alertsState.removeListener(_updateIsAppBarExpanded);
     _alertsState.dispose();
     _neededAlertTopSafeArea.dispose();
     super.dispose();
   }
 
+  Widget buildFromIsAppBarExpanded({
+    required Widget Function(BuildContext context, bool isAppBarExpanded)
+    builder,
+  }) {
+    return _isAppBarExpanded.build(builder);
+  }
+
   double? _lastListenedValue;
   void _listener() {
-    if (controller.value >= openedThreshold) {
-      isMostlyOpened.update(true);
-      if (snackbarAnimationController.value > 0 &&
-          !snackbarAnimationController.isAnimating) {
+    if (_controller.value >= openedThreshold) {
+      _isMostlyOpened.update(true);
+      if (_snackbarAnimationController.value > 0 &&
+          !_snackbarAnimationController.isAnimating) {
         closeSnackBar();
       }
-    } else if (controller.value < closedThreshold) {
-      isMostlyOpened.update(false);
+    } else if (_controller.value < closedThreshold) {
+      _isMostlyOpened.update(false);
     }
-    if (controller.value == 0 && (_lastListenedValue ?? 0) > 0) {
-      if (!_dragOngoing) {
-        setState(() {
-          _alertsState.clear();
-        });
-      }
+    if (_controller.value == 0 &&
+        (_lastListenedValue ?? 0) > 0 &&
+        !_dragOngoing) {
+      setState(() {
+        _alertsState.clear();
+      });
     }
-    _lastListenedValue = controller.value;
+    _lastListenedValue = _controller.value;
   }
 
   void _onPanelSizeChanged(Size size) {
@@ -214,7 +229,7 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
   }
 
   double _computeNeededSafeArea(Size screenSize, double targetAlertHeight) {
-    final safe = context.safe;
+    final safe = MediaQuery.viewPaddingOf(context);
 
     final currentExpandedPanelMargin = _alertsState
         .resultingExpandedPanelMargin(widget.style, context);
@@ -241,47 +256,55 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
     return remaining < topSafe ? topSafe - remaining : 0;
   }
 
-  void showAlert(Widget alert) {
-    _alertsState.addAlert(alert: alert, isMostlyOpened: isMostlyOpened.value);
+  /// the future is always complete when the alert is closed, either with a value or with null if the alert is dismissed without returning a value
+  Future<T?> showAlert<T>(Widget alert) {
+    final future = _alertsState.addAlert<T>(
+      child: alert,
+      isMostlyOpened: _isMostlyOpened.value,
+    );
     openPanel();
+    return future;
   }
 
-  Future<void> previousAlert() => _alertsState.goBack(
-    duration: widget.style.duration,
-    closePanel: closePanel,
-    mountedGetter: () => mounted,
-  );
+  Future<void> previousAlert<T extends Object?>([T? result]) =>
+      _alertsState.goBack(
+        duration: widget.style.duration,
+        closePanel: closePanel,
+        mountedGetter: () => mounted,
+        result: result,
+      );
 
   Future<void> closePanel() async {
     if (!mounted) return;
+    context.unfocus();
 
-    if (controller.value > 0) {
-      await controller.animateBack(
-        0.0,
-        duration: widget.style.duration,
-        curve: widget.style.curve,
-      );
+    if (_controller.value == 0 && !_controller.isAnimating) {
       _alertsState.clear();
-      if (!mounted) return;
-    } else {
-      _alertsState.clear();
+      return;
     }
+
+    await _controller.animateBack(
+      0.0,
+      duration: widget.style.duration,
+      curve: widget.style.curve,
+    );
+    if (!mounted) return;
+    _alertsState.clear();
   }
 
   Future<void> openPanel() async {
     if (!mounted) return;
-    if (controller.value < 1) {
-      return controller.animateTo(
-        1.0,
-        duration: widget.style.duration,
-        curve: widget.style.curve,
-      );
-    }
+    if (_controller.value == 1 && !_controller.isAnimating) return;
+    return _controller.animateTo(
+      1.0,
+      duration: widget.style.duration,
+      curve: widget.style.curve,
+    );
   }
 
   Future<void> togglePanel() async {
     if (!mounted) return;
-    if (controller.value > 0.5) {
+    if (_controller.value > 0.5) {
       return closePanel();
     } else {
       return openPanel();
@@ -299,7 +322,7 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
   Future<void> closeSnackBar() async {
     if (!mounted) return;
     _snackBarCurve = Easings.emphasizedAccelerate;
-    await snackbarAnimationController.animateTo(
+    await _snackbarAnimationController.animateTo(
       0,
       duration: Durations.short4,
       curve: Curves.linear, // curves are applied in the widget
@@ -313,7 +336,7 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
   int _snackBarId = 0;
   Future<void> showSnackBar(PanelSnackBar snackBar) async {
     if (!mounted) return;
-    if (snackbarAnimationController.value > 0) {
+    if (_snackbarAnimationController.value > 0) {
       await closeSnackBar();
     }
     if (!mounted) return;
@@ -323,7 +346,10 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
     });
     final int id = _snackBarId;
     _snackBarCurve = Easings.emphasizedDecelerate;
-    await snackbarAnimationController.animateTo(1, duration: Durations.medium3);
+    await _snackbarAnimationController.animateTo(
+      1,
+      duration: Durations.medium3,
+    );
     if (!mounted) return;
     if (snackBar.duration case Duration duration) {
       await Future.delayed(duration);
@@ -335,31 +361,30 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final safe = mediaQuery.padding;
+    final screenSize = MediaQuery.sizeOf(context);
+    final viewPadding = MediaQuery.viewPaddingOf(context);
 
     final theme = context.theme;
 
     final bottomBar = _BottomBar(
       bottomBarHeight: widget.bottomBar.preferredSize.height,
-      safe: safe,
+      viewPadding: viewPadding,
       style: widget.style,
-      mediaQuery: mediaQuery,
       child: widget.bottomBar,
     );
 
     final barrier = _Barrier(
       style: widget.style,
-      controller: controller,
+      controller: _controller,
       closePanel: closePanel,
     );
 
     final topBar = _TopBar(
       alertsState: _alertsState,
-      controller: controller,
+      controller: _controller,
       collapsedTopBarHeight: widget.style.topBarCollapsedHeight,
       expandedTopBarHeight: widget.style.topBarExpandedHeight,
-      safe: safe,
+      viewPadding: viewPadding,
       topBarBuilder: widget.topBarBuilder,
       topBarChild: widget.topBarChild,
       barrier: barrier,
@@ -375,7 +400,7 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
         ),
         Positioned.fill(
           child: _SnackBar(
-            snackbarAnimation: snackbarAnimationController,
+            snackbarAnimation: _snackbarAnimationController,
             curve: _snackBarCurve,
             snackBar: _snackBar,
           ),
@@ -383,41 +408,39 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
       ],
     );
 
-    void onDragUpdate(DragUpdateDetails details) => onPanelDrag(
+    void onDragUpdate(DragUpdateDetails details) => _onPanelDrag(
       details,
       (_expandedHeight - widget.style.collapsedPanelHeight).abs(),
     );
 
     final panel = _Panel(
       neededAlertTopSafeArea: _neededAlertTopSafeArea,
-      mediaQuery: mediaQuery,
       alertsState: _alertsState,
       style: widget.style,
       duration: widget.style.duration,
       curve: widget.style.curve,
-      controller: controller,
+      controller: _controller,
       collapsedPanel: collapsedPanel,
       bottomBarHeight: widget.bottomBar.preferredSize.height,
-      safe: safe,
+      viewPadding: viewPadding,
       theme: theme,
-      onDragEnd: onDragEnd,
+      onDragEnd: _onDragEnd,
       onDragUpdate: onDragUpdate,
       panelContentScrollPhysics: panelContentScrollPhysics,
-      onTargetAlertSizeChanged: (s) =>
-          _onTargetAlertSizeChanged(s, mediaQuery.size),
+      onTargetAlertSizeChanged: (s) => _onTargetAlertSizeChanged(s, screenSize),
       onPanelSizeChanged: _onPanelSizeChanged,
       expandedPanel: widget.expandedPanel,
     );
 
     final body = _Body(
-      controller: controller,
+      controller: _controller,
       alertsState: _alertsState,
       style: widget.style,
       child: widget.body,
     );
 
     final bottomGestures = _BottomGestures(
-      onDragEnd: onDragEnd,
+      onDragEnd: _onDragEnd,
       onDragUpdate: onDragUpdate,
     );
 
@@ -429,7 +452,7 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
           previousAlert();
           return;
         }
-        if (controller.value > 0) {
+        if (_controller.value > 0) {
           closePanel();
           return;
         }
@@ -445,7 +468,7 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
         child: _PanelFrameLayout(
           style: widget.style,
           theme: theme,
-          safe: safe,
+          viewPadding: viewPadding,
           body: body,
           bottomBar: bottomBar,
           barrier: barrier,
@@ -464,25 +487,26 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
   static const double closedThreshold = 0.4;
 
   bool _dragOngoing = false;
-  bool? onDragEnd(DragEndDetails details) {
+  bool? _onDragEnd(DragEndDetails details) {
     _dragOngoing = false;
     // let the current animation finish before starting a new one
-    if (controller.isAnimating) return null;
+    if (_controller.isAnimating) return null;
     // (can happen if you swipe up and down like a maniac)
 
     //check if the velocity is sufficient to constitute fling
     double vel = -details.velocity.pixelsPerSecond.dy;
     if (vel.abs() >= minFlingVelocity) {
-      if (vel > 0) {
-        // TODO: craft a better curve / duration based on the velocity and the current position of the panel
-        openPanel();
-        return true;
-      } else {
-        closePanel();
-        return false;
-      }
+      _flingPanel(
+        v: vel.abs() * 2,
+        S: (_expandedHeight - widget.style.collapsedPanelHeight).abs(),
+        target: switch (vel) {
+          > 0 => 1,
+          _ => 0,
+        },
+      );
+      return vel > 0;
     }
-    switch (controller.value.clamp(0.0, 1.0)) {
+    switch (_controller.value.clamp(0.0, 1.0)) {
       case >= openedThreshold:
         openPanel();
         return true;
@@ -490,7 +514,7 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
         closePanel();
         return false;
       default:
-        if (isMostlyOpened.value) {
+        if (_isMostlyOpened.value) {
           openPanel();
           return true;
         }
@@ -499,10 +523,57 @@ class PanelFrameState extends State<_PanelFrame> with TickerProviderStateMixin {
     }
   }
 
-  void onPanelDrag(DragUpdateDetails details, double delta) {
+  void _onPanelDrag(DragUpdateDetails details, double delta) {
+    context.unfocus();
     _dragOngoing = true;
     if (details.primaryDelta case double d) {
-      controller.value = (controller.value - 1.2 * d / delta).clamp(0, 1);
+      _controller.value = (_controller.value - 1.2 * d / delta).clamp(0, 1);
     }
+  }
+
+  Future<void> _flingPanel({
+    /// desired fling velocity (in pixels per second)
+    required double v,
+
+    /// total distance travelled by the panel while opening completely (in pixels)
+    required double S,
+
+    /// target value of the animation (0 for closing, 1 for opening)
+    required double target,
+  }) async {
+    if (!mounted) return;
+
+    if (target == 0 && _controller.value == 0 && !_controller.isAnimating) {
+      _alertsState.clear();
+      return;
+    }
+
+    await _animateFling(v: v, S: S, target: target);
+
+    if (!mounted) return;
+    if (target == 0) _alertsState.clear();
+  }
+
+  Future<void> _animateFling({
+    /// desired fling velocity (in pixels per second)
+    required double v,
+
+    /// total distance travelled by the panel while opening completely (in pixels)
+    required double S,
+
+    /// target value of the animation (0 for closing, 1 for opening)
+    required double target,
+  }) async {
+    await _controller.animateTo(
+      target,
+      duration: Duration(
+        microseconds:
+            (widget.style.duration.inMicroseconds *
+                    0.9 *
+                    (target - _controller.value).abs())
+                .round(),
+      ),
+      curve: Easings.emphasizedDecelerate,
+    );
   }
 }

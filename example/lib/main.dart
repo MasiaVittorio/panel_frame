@@ -45,7 +45,7 @@ extension OnStyleChanged on BuildContext {
       provide<ValueChanged<PanelFrameStyleData>>()(value);
 }
 
-enum BodyPage { alerts, snackbars, theme, more, settings }
+enum BodyPage { alerts, snackbars, theme, notes, settings }
 
 enum PanelPage { theme, alerts, settings }
 

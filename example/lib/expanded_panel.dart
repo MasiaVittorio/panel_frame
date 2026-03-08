@@ -17,10 +17,10 @@ class ExpandedPanel extends StatelessWidget {
           Expanded(
             child: AnimatedPagedView(
               value: value,
-              pages: [
-                ViewPage(child: const Placeholder(), value: PanelPage.alerts),
-                ViewPage(child: const Placeholder(), value: PanelPage.settings),
-                ViewPage(child: const PanelThemePage(), value: PanelPage.theme),
+              pages: const [
+                ViewPage(child: Placeholder(), value: PanelPage.alerts),
+                ViewPage(child: Placeholder(), value: PanelPage.settings),
+                ViewPage(child: PanelThemePage(), value: PanelPage.theme),
               ],
             ),
           ),

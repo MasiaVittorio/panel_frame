@@ -25,14 +25,30 @@ class VariantTile extends StatelessWidget {
         ),
         title: Text('Dynamic scheme variant'.todo),
         subtitle: Text(value.name.capitalizeFirst),
-        onTap: () => context.panelFrame.showAlert(
-          ThemeVariantPanelPicker(
-            initialVariant: value,
-            onPicked: onChanged,
-            height: 500,
-          ),
-        ),
+        onTap: needsConfirmation
+            ? () async {
+                final result = await context.panelFrame.showAlert(
+                  ThemeVariantPanelPicker(initialVariant: value, height: 700),
+                );
+                if (!context.mounted) return;
+                if (result case DynamicSchemeVariant v) {
+                  onChanged(v);
+                }
+              }
+            : () => context.panelFrame.showAlert(
+                ThemeVariantPanelPicker(
+                  initialVariant: value,
+                  height: 700,
+                  confirmationMode: SelectAndConfirm(
+                    onUnconfirmedSelection: (v) {
+                      if (v != null) onChanged(v);
+                    },
+                  ),
+                ),
+              ),
       );
     });
   }
+
+  static const bool needsConfirmation = false;
 }

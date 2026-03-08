@@ -4,7 +4,7 @@ class _PanelFrameLayout extends StatelessWidget {
   const _PanelFrameLayout({
     required this.style,
     required this.theme,
-    required this.safe,
+    required this.viewPadding,
     required this.body,
     required this.bottomBar,
     required this.barrier,
@@ -16,7 +16,7 @@ class _PanelFrameLayout extends StatelessWidget {
 
   final PanelFrameStyleData style;
   final ThemeData theme;
-  final EdgeInsets safe;
+  final EdgeInsets viewPadding; // static, non keyboard
   final _Body body;
   final _BottomBar bottomBar;
   final _Barrier barrier;
@@ -31,20 +31,21 @@ class _PanelFrameLayout extends StatelessWidget {
       data: style,
       child: Scaffold(
         backgroundColor: style.scaffoldBackgroundColor(context),
+        resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
             Positioned.fill(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Space.vertical(style.topBarCollapsedHeight + safe.top),
+                  Space.vertical(style.topBarCollapsedHeight + viewPadding.top),
                   Expanded(child: body),
                   bottomBar,
                 ],
               ),
             ),
             Positioned(
-              bottom: safe.bottom,
+              bottom: viewPadding.bottom,
               left: 0,
               right: 0,
               height: bottomBarHeight,

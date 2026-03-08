@@ -52,9 +52,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     ];
 
     void submit() {
-      if (_color != null) {
-        widget.onChanged(_color!);
-        context.panelFrame.closePanel();
+      if (_color case Color v) {
+        widget.onChanged(v);
+        context.panelFrame.previousAlert(v);
       }
     }
 
@@ -64,7 +64,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        PanelHeader(),
+        const PanelHeader(),
         SizedBox(
           height: 350,
           child: RadioPageTransition<ColorPickerMode>(
@@ -100,12 +100,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
         Space.vertical(layout.spacing.medium),
         CallToAction.filledOutlined.withTheme(
           theme: switch (_color) {
-            null => HighCallToActionTheme(),
+            null => const HighCallToActionTheme(),
             Color c => _CustomCallToActionTheme(c),
           },
           action: submit,
-          label: Text('Confirm'),
-          icon: Icon(Icons.check),
+          label: const Text('Confirm'),
+          icon: const Icon(Icons.check),
         ),
         SafeArea(top: false, child: Space.vertical(layout.spacing.medium)),
       ],
@@ -166,12 +166,12 @@ class ColorPickerModeSlider extends StatelessWidget {
       allowDeselectOnTap: false,
       onSelect: (value) => onChanged(value!),
       segments: [
-        SliderSegment(
+        const SliderSegment(
           value: ColorPickerMode.manual,
           selectedIcon: Icon(Icons.format_color_fill),
           label: Text('Manual'),
         ),
-        SliderSegment(
+        const SliderSegment(
           value: ColorPickerMode.custom,
           selectedIcon: Icon(Icons.short_text),
           label: Text('Custom'),
@@ -180,7 +180,7 @@ class ColorPickerModeSlider extends StatelessWidget {
           value: ColorPickerMode.palette,
           selectedIcon: Icon(MdiIcons.palette),
           unselectedIcon: Icon(MdiIcons.paletteOutline),
-          label: Text('Palette'),
+          label: const Text('Palette'),
         ),
       ],
     );

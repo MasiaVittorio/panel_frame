@@ -18,6 +18,7 @@ dependencies:
     path: ../call_to_action
   segmented_slider:
     path: ../segmented_slider
+  keyboard_insets: ^0.1.2
 
 dev_dependencies:
   flutter_test:

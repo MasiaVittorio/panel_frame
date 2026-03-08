@@ -12,7 +12,7 @@ class MyAlert extends StatelessWidget {
   Widget build(BuildContext context) {
     final panelFrame = context.panelFrame;
     void next() => panelFrame.showAlert(MyAlert(height: height + 200));
-    return HeaderedList(
+    return HeaderedList.expand(
       height: height,
       children: {
         (

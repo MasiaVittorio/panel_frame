@@ -11,13 +11,15 @@ class AppBarTitle extends StatelessWidget {
     final frame = context.panelFrame;
     final pageVar = context.provide<Reactive<BodyPage>>();
     return pageVar.build((context, page) {
-      return frame.isAppBarExpanded.build((context, value) {
-        return AnimatedText(
-          value ? "Opened panel" : page.name.capitalizeFirst,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-          duration: const Duration(milliseconds: 260),
-        );
-      });
+      return frame.buildFromIsAppBarExpanded(
+        builder: (context, value) {
+          return AnimatedText(
+            value ? "Opened panel" : page.name.capitalizeFirst,
+            style: const TextStyle(fontWeight: FontWeight.w500),
+            duration: const Duration(milliseconds: 260),
+          );
+        },
+      );
     });
   }
 }

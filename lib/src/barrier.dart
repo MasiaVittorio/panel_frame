@@ -19,12 +19,17 @@ class _Barrier extends StatelessWidget {
         return IgnorePointer(
           ignoring: value < 0.1,
           child: GestureDetector(
-            onTap: style.dismissOnBarrierTap && value > 0.5 ? closePanel : null,
+            onTap: style.dismissOnBarrierTap && value > 0.5
+                ? () {
+                    context.unfocus();
+                    closePanel();
+                  }
+                : null,
             child: Container(
               color: style.barrierColor.withValues(
                 alpha: value.rangeMap(to: (0, style.barrierColor.a)),
               ),
-              child: SizedBox.expand(),
+              child: const SizedBox.expand(),
             ),
           ),
         );

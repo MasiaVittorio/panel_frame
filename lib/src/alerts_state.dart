@@ -1,56 +1,89 @@
 part of '../panel_frame.dart';
 
-class _AlertsState extends ChangeNotifier {
-  List<Widget> alerts = [];
+class _PanelAlert<T> {
+  final Widget child;
+  T? registeredValueForCompletion;
+  late final Completer<T?> completer;
+  _PanelAlert({required this.child}) {
+    completer = Completer<T?>();
+  }
 
-  Widget? get currentAlert => switch (alerts) {
+  void complete(T? value) {
+    if (completer.isCompleted) return;
+    completer.complete(value ?? registeredValueForCompletion);
+  }
+
+  void register(T value) {
+    registeredValueForCompletion = value;
+  }
+}
+
+class _AlertsState extends ChangeNotifier {
+  final List<_PanelAlert> _alerts = [];
+  List<Widget> get alertChildren => [for (final a in _alerts) a.child];
+  int get howManyCurrentAlerts => _alerts.length;
+
+  Widget? get currentAlert => (switch (_alerts) {
     [] => null,
-    final list => switch (isAnimatingBack) {
+    final list => switch (getAnimatingBack) {
       true => list.length > 1 ? list[list.length - 2] : list.last,
       false => list.last,
     },
-  };
+  })?.child;
 
-  bool get isShowingAlert => alerts.isNotEmpty;
+  bool get isShowingAlert => _alerts.isNotEmpty;
   bool get isGoingBackToExpandedPanelFromFirstAlert =>
       openedFirstAlertFromExpandedPanel &&
-      alerts.length == 1 &&
-      isAnimatingBack;
+      howManyCurrentAlerts == 1 &&
+      getAnimatingBack;
 
   bool openedFirstAlertFromExpandedPanel = false;
-  bool isAnimatingBack = false;
+  bool _isAnimatingBack = false;
+  bool get getAnimatingBack => _isAnimatingBack;
+
   int _animatingBackId = 0;
 
-  void addAlert({required Widget alert, required bool isMostlyOpened}) {
-    if (alerts.isEmpty) {
+  Future<T?> addAlert<T>({
+    required Widget child,
+    required bool isMostlyOpened,
+  }) {
+    if (_alerts.isEmpty) {
       openedFirstAlertFromExpandedPanel = isMostlyOpened;
     }
-    if (isAnimatingBack) {
-      if (alerts.isNotEmpty) {
-        alerts.removeLast();
+    if (getAnimatingBack) {
+      _isAnimatingBack = false;
+      if (_alerts.isNotEmpty) {
+        _alerts.removeLast();
       }
-      isAnimatingBack = false;
     }
-    alerts.add(alert);
+    final _PanelAlert<T> alert = _PanelAlert<T>(child: child);
+    _alerts.add(alert);
     notifyListeners();
+    return alert.completer.future;
   }
 
   Future<void> goBack({
     required Duration duration,
     required VoidCallback closePanel,
     required bool Function() mountedGetter,
+    required dynamic result,
   }) async {
-    if (isAnimatingBack) return;
+    if (getAnimatingBack) return;
     if (!mountedGetter()) return;
-    if (alerts.isEmpty) {
+    if (_alerts.isEmpty) {
       notifyListeners();
       return closePanel();
     }
-    if (alerts.length == 1 && !openedFirstAlertFromExpandedPanel) {
+
+    _alerts.last.register(result);
+
+    if (_alerts.length == 1 && !openedFirstAlertFromExpandedPanel) {
       notifyListeners();
+      // will trigger clear anyway
       return closePanel();
     }
-    isAnimatingBack = true;
+
+    _isAnimatingBack = true;
     _animatingBackId++;
     notifyListeners();
     final id = _animatingBackId;
@@ -61,34 +94,39 @@ class _AlertsState extends ChangeNotifier {
   }
 
   void _finishRemovingAlert(int id) {
-    if (isAnimatingBack && id == _animatingBackId && alerts.isNotEmpty) {
+    if (getAnimatingBack && id == _animatingBackId && _alerts.isNotEmpty) {
       // if not, it means we called add alert during the back animation,
       // in which case the last children was already replaced instead of removed
-      alerts.removeLast();
-      if (alerts.isEmpty) {
+      _alerts.removeLast();
+      if (_alerts.isEmpty) {
         openedFirstAlertFromExpandedPanel = false;
       }
     }
-    isAnimatingBack = false;
+    _isAnimatingBack = false;
     notifyListeners();
   }
 
   void clear() {
-    alerts.clear();
+    for (final a in _alerts) {
+      a.complete(null);
+    }
+    _alerts.clear();
     openedFirstAlertFromExpandedPanel = false;
-    isAnimatingBack = false;
+    _isAnimatingBack = false;
     notifyListeners();
   }
 
+  /// doesn't account for the keyboard, that is added inside animated_panel
   EdgeInsets resultingExpandedPanelMargin(
     PanelFrameStyleData style,
     BuildContext context,
   ) {
-    final focusedAlert = isGoingBackToExpandedPanelFromFirstAlert
-        ? null
-        : currentAlert;
+    final focusedAlert = switch (isGoingBackToExpandedPanelFromFirstAlert) {
+      true => null,
+      false => currentAlert,
+    };
 
-    final EdgeInsets desiredExpandedPanelMargins = switch (focusedAlert) {
+    final EdgeInsets desiredMargins = switch (focusedAlert) {
       final PanelAlertWidget w =>
         w.overridePanelMargin ?? style.expandedPanelMargin(context),
       _ => style.expandedPanelMargin(context),
@@ -99,29 +137,22 @@ class _AlertsState extends ChangeNotifier {
       _ => false,
     };
 
-    final bool removeSafeAreas = forceExtendToFullScreen
-        ? true
-        : switch (focusedAlert) {
-            final PanelAlertWidget w =>
-              w.wantsToBeFullScreen ?? style.fullScreenExpandedPanel,
-            _ => style.fullScreenExpandedPanel,
-          };
+    final bool touchEdges =
+        forceExtendToFullScreen || style.fullScreenExpandedPanel;
 
-    final safe = context.safe;
+    final EdgeInsets safe = MediaQuery.paddingOf(context);
 
-    final double justExpandedPanelTopMargin = style.justExpandedPanelTopMargin(
-      safe,
-    );
+    final double expandedTopMargin = style.justExpandedPanelTopMargin(safe);
 
     final baseMargins = forceExtendToFullScreen
         ? EdgeInsets.zero
-        : desiredExpandedPanelMargins;
+        : desiredMargins;
 
     return baseMargins +
         EdgeInsets.only(
-          bottom: removeSafeAreas && baseMargins.bottom == 0 ? 0 : safe.bottom,
-          top: switch ((focusedAlert, removeSafeAreas)) {
-            (null, _) => justExpandedPanelTopMargin,
+          bottom: touchEdges && baseMargins.bottom == 0 ? 0 : safe.bottom,
+          top: switch ((focusedAlert, touchEdges)) {
+            (null, _) => expandedTopMargin,
             (_, true) => baseMargins.top == 0 ? 0 : safe.top,
             (_, false) => safe.top,
           },

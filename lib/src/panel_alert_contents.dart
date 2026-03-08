@@ -50,14 +50,11 @@ class _ExpandedPanelAlertContents extends StatelessWidget {
           for (int i = 0; i < children.length; i++) {
             final double delta = (i - mainIndex).toDouble().clamp(-1, 1);
             // delta is 0 when i is the displayed index, < 0 when i is too small so must go to the left, > 0 when i is too big so must go to the right
-            final mediaQuery = MediaQuery.of(context);
             list.add(
               CleanProvider(
                 data: _AlertMetadata(canGoBack: i != 0),
-                child: MediaQuery(
-                  data: mediaQuery.copyWith(
-                    padding: mediaQuery.padding.copyWith(top: alertTopSafeArea),
-                  ),
+                child: OverrideMediaQueryPadding(
+                  top: alertTopSafeArea,
                   child: FractionalTranslation(
                     transformHitTests: true,
                     translation: Offset(

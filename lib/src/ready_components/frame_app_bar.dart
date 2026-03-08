@@ -33,8 +33,8 @@ class FrameAppBar extends StatelessWidget {
     final theme = context.theme;
     final layout = theme.layout;
     final frame = context.panelFrame;
-    final isExpanded = frame.isAppBarExpanded;
-    final isAlert = frame.isShowingAlert;
+    final isExpanded = frame._isAppBarExpanded;
+    final isAlert = frame._isShowingAlert;
 
     return Material(
       child: SafeArea(
@@ -88,7 +88,8 @@ class FrameAppBar extends StatelessWidget {
                             child: child,
                             builder: (context, value, child) {
                               final keepSubtitleHidden =
-                                  frame._alertsState.alerts.length == 1 &&
+                                  frame._alertsState.howManyCurrentAlerts ==
+                                      1 &&
                                   (!frame
                                       ._alertsState
                                       .openedFirstAlertFromExpandedPanel);

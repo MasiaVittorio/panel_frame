@@ -1,4 +1,5 @@
 import 'package:example/main.dart';
+import 'package:example/pages/notes_page.dart';
 import 'package:example/pages/settings_page.dart';
 import 'package:example/pages/snackbars_page.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +16,12 @@ class MyBody extends StatelessWidget {
     return context.provide<Reactive<BodyPage>>().build((context, value) {
       return AnimatedPagedView(
         value: value,
-        pages: [
-          ViewPage(value: BodyPage.theme, child: const ThemePage()),
-          ViewPage(value: BodyPage.alerts, child: const AlertsPage()),
-          ViewPage(value: BodyPage.snackbars, child: const SnackBarsPage()),
-          ViewPage(value: BodyPage.settings, child: const SettingsPage()),
-          ViewPage(value: BodyPage.more, child: Container()),
+        pages: const [
+          ViewPage(value: BodyPage.theme, child: ThemePage()),
+          ViewPage(value: BodyPage.alerts, child: AlertsPage()),
+          ViewPage(value: BodyPage.snackbars, child: SnackBarsPage()),
+          ViewPage(value: BodyPage.settings, child: SettingsPage()),
+          ViewPage(value: BodyPage.notes, child: NotesPage()),
         ],
       );
     });

@@ -15,27 +15,26 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MediaQuery.removePadding(
-      removeTop: true,
-      removeBottom: true,
-      context: context,
-      child: ValueListenableBuilder(
-        valueListenable: controller,
+    return ValueListenableBuilder(
+      valueListenable: controller,
+      child: child,
+      builder: (context, value, child) => ListenableBuilder(
+        listenable: alertsState,
         child: child,
-        builder: (context, value, child) => ListenableBuilder(
-          listenable: alertsState,
-          child: child,
-          builder: (context, child) {
-            return FractionalTranslation(
-              translation: Offset(
-                0,
-                -(alertsState.isShowingAlert ? 0 : value) *
-                    style.bodyParallaxMultiplier,
-              ),
+        builder: (context, child) {
+          return FractionalTranslation(
+            translation: Offset(
+              0,
+              -(alertsState.isShowingAlert ? 0 : value) *
+                  style.bodyParallaxMultiplier,
+            ),
+            child: OverrideMediaQueryPadding(
+              bottom: style.collapsedPanelHeight / 2,
+              top: 0,
               child: child!,
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

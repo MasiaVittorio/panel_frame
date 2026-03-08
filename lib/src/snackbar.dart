@@ -28,8 +28,6 @@ class PanelSnackBar {
   });
 }
 
-// TODO: make a bunch of panel alert variants ready to use
-
 class _SnackBar extends StatelessWidget {
   const _SnackBar({
     required this.snackBar,
@@ -45,7 +43,7 @@ class _SnackBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final snackBar = this.snackBar;
     if (snackBar == null) {
-      return Center(child: SizedBox.shrink());
+      return const Center(child: SizedBox.shrink());
     }
     final theme = context.theme;
     final layout = theme.layout;
@@ -57,7 +55,7 @@ class _SnackBar extends StatelessWidget {
     );
 
     final Widget insideContent = Pad(
-      horizontal: layout.padding.medium,
+      horizontal: layout.margin.large,
       child: Center(child: snackBar.child),
     );
 
@@ -87,7 +85,7 @@ class _SnackBar extends StatelessWidget {
             snackBar.scrollable
                 ? insideContent
                 : Expanded(child: insideContent),
-            BiggestSquare(),
+            const BiggestSquare(),
           ].modalReversed(snackBar.fromLeft),
         ),
       ),
@@ -219,6 +217,7 @@ class _ScrollWrapped extends StatelessWidget {
         true => CallbackScrollPhysics(
           topBounce: true,
           topBounceCallback: context.panelFrame.closeSnackBar,
+          alwaysScrollable: true,
         ),
       },
       reverse: snackBar.fromLeft,

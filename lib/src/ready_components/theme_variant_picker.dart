@@ -1,81 +1,42 @@
 part of '../../panel_frame.dart';
 
-class ThemeVariantPanelPicker extends StatefulWidget {
+class ThemeVariantPanelPicker extends StatelessWidget {
   const ThemeVariantPanelPicker({
     super.key,
-    required this.initialVariant,
-    required this.onPicked,
-    this.shouldConfirmBeforeApplying = false,
     this.height,
+    required this.initialVariant,
+    this.confirmationMode = const ReturnImmediately(),
   });
 
   final double? height;
   final DynamicSchemeVariant initialVariant;
-  final ValueChanged<DynamicSchemeVariant> onPicked;
-  final bool shouldConfirmBeforeApplying;
-
-  @override
-  State<ThemeVariantPanelPicker> createState() =>
-      _ThemeVariantPanelPickerState();
-}
-
-class _ThemeVariantPanelPickerState extends State<ThemeVariantPanelPicker> {
-  late DynamicSchemeVariant _selectedVariant;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedVariant = widget.initialVariant;
-  }
-
-  void onChanged(DynamicSchemeVariant? value) {
-    if (value != null) {
-      setState(() {
-        _selectedVariant = value;
-      });
-      if (!widget.shouldConfirmBeforeApplying) {
-        widget.onPicked(value);
-      }
-    }
-  }
+  final AlternativeConfirmationMode<DynamicSchemeVariant> confirmationMode;
 
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
 
-    return RadioGroup(
-      groupValue: _selectedVariant,
-      onChanged: onChanged,
-      child: HeaderedList(
-        height: widget.height,
-        bottom: widget.shouldConfirmBeforeApplying
-            ? CallToAction(
-                action: () {
-                  widget.onPicked(_selectedVariant);
-                  context.panelFrame.closePanel();
-                },
-                label: Text(
-                  MaterialLocalizations.of(context).continueButtonLabel,
+    return AlternativesPanelAlert<DynamicSchemeVariant>(
+      initialValue: initialVariant,
+      confirmationMode: confirmationMode,
+      height: height,
+      shrinkWrap: false,
+      alternatives: [
+        for (final variant in DynamicSchemeVariant.values)
+          PanelAlternative(
+            value: variant,
+            label: Text(variant.name.capitalizeFirst),
+            subtitle: Text(
+              variant.description,
+              style: theme.textTheme.bodySmall!.copyWith(
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.8,
                 ),
-              )
-            : null,
-        children: [
-          for (final variant in DynamicSchemeVariant.values)
-            RadioListTile(
-              value: variant,
-              title: Text(variant.name),
-              subtitle: Text(
-                variant.description,
-                style: theme.textTheme.bodySmall!.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(
-                    alpha: 0.8,
-                  ),
-                  fontWeight: FontWeight.w300,
-                ),
+                fontWeight: FontWeight.w300,
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }

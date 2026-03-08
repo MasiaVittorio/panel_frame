@@ -4,7 +4,7 @@ class _TopBar extends StatelessWidget {
   const _TopBar({
     required this.controller,
     required this.collapsedTopBarHeight,
-    required this.safe,
+    required this.viewPadding,
     required this.expandedTopBarHeight,
     required this.topBarBuilder,
     required this.topBarChild,
@@ -18,7 +18,7 @@ class _TopBar extends StatelessWidget {
   final _AlertsState alertsState;
   final AnimationController controller;
   final double collapsedTopBarHeight;
-  final EdgeInsets safe;
+  final EdgeInsets viewPadding; // static, non keyboard
   final double expandedTopBarHeight;
 
   final Widget Function(BuildContext context, Widget? child, double openValue)
@@ -29,8 +29,8 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final e = expandedTopBarHeight + safe.top;
-    final c = collapsedTopBarHeight + safe.top;
+    final e = expandedTopBarHeight + viewPadding.top;
+    final c = collapsedTopBarHeight + viewPadding.top;
 
     return ListenableBuilder(
       listenable: alertsState,
@@ -53,7 +53,7 @@ class _TopBar extends StatelessWidget {
               child: topBarChild,
               builder: (context, value, child) {
                 final definitiveHeight =
-                    alertsState.alerts.length == 1 &&
+                    alertsState.howManyCurrentAlerts == 1 &&
                         !alertsState.openedFirstAlertFromExpandedPanel
                     ? c
                     : value.rangeMap(to: (c, animatedExpandedHeight));

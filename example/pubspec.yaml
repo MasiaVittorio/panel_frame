@@ -40,6 +40,9 @@ dependencies:
     path: ../../sid_base
   segmented_slider:
     path: ../../segmented_slider
+  call_to_action:
+    path: ../../call_to_action
+  keyboard_insets: ^0.1.2
 
 dev_dependencies:
   flutter_test:

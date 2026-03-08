@@ -27,11 +27,21 @@ class ThemeLogic extends ThemeLogicBase {
         ? const Color(0xfff8f8f8)
         : theme.scaffoldBackgroundColor;
 
+    const layout = Layout.defaultLayout;
     return theme.copyWith(
       scaffoldBackgroundColor: scaffoldBackgroundColor,
       iconTheme: theme.iconTheme.copyWith(color: theme.colorScheme.onSurface),
+      // inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+      //   filled: true,
+      //   border: OutlineInputBorder(
+      //     borderRadius: BorderRadius.circular(layout.radius.medium),
+      //     borderSide: BorderSide.none,
+      //   ),
+      // ),
       inputDecorationTheme: theme.inputDecorationTheme.copyWith(
-        border: const OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(layout.radius.medium),
+        ),
       ),
       sliderTheme: theme.sliderTheme.copyWith(year2023: false),
       appBarTheme: theme.appBarTheme.copyWith(
@@ -59,9 +69,9 @@ class ThemeLogic extends ThemeLogicBase {
           fontWeight: FontWeight.w400,
           color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
         ),
-        minVerticalPadding: Layout.defaultLayout.margin.medium,
+        minVerticalPadding: layout.margin.medium,
       ),
-      extensions: [Layout.defaultLayout],
+      extensions: [layout],
     );
   }
 }

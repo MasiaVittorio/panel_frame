@@ -9,7 +9,7 @@ class _Panel extends StatelessWidget {
     required this.controller,
     required this.collapsedPanel,
     required this.theme,
-    required this.safe,
+    required this.viewPadding, // static, non keyboard
     required this.bottomBarHeight,
     required this.onDragEnd,
     required this.onDragUpdate,
@@ -18,11 +18,9 @@ class _Panel extends StatelessWidget {
     required this.onPanelSizeChanged,
     required this.panelContentScrollPhysics,
     required this.neededAlertTopSafeArea,
-    required this.mediaQuery,
   });
 
   final Reactive<double> neededAlertTopSafeArea;
-  final MediaQueryData mediaQuery;
   final Widget expandedPanel;
   final ValueChanged<Size> onTargetAlertSizeChanged;
   final ValueChanged<Size> onPanelSizeChanged;
@@ -33,7 +31,7 @@ class _Panel extends StatelessWidget {
   final AnimationController controller;
   final Widget collapsedPanel;
   final ThemeData theme;
-  final EdgeInsets safe;
+  final EdgeInsets viewPadding;
   final double bottomBarHeight;
   final void Function(DragEndDetails details) onDragEnd;
   final void Function(DragUpdateDetails details) onDragUpdate;
@@ -49,7 +47,7 @@ class _Panel extends StatelessWidget {
         EdgeInsets.symmetric(
           horizontal: style.collapsedPanelHorizontalMargin(context),
         ) +
-        safe +
+        viewPadding +
         EdgeInsets.only(bottom: bottomBarHeight);
 
     // computed once instead of inside the value builder
@@ -78,16 +76,16 @@ class _Panel extends StatelessWidget {
       builder: (context, child) {
         final expandedPanelAlertContents = _ExpandedPanelAlertContents(
           neededAlertTopSafeArea: neededAlertTopSafeArea,
-          isAnimatingBack: alertsState.isAnimatingBack,
+          isAnimatingBack: alertsState.getAnimatingBack,
           duration: duration,
           curve: curve,
           onTargetSizeChanged: onTargetAlertSizeChanged,
-          children: [...alertsState.alerts],
+          children: alertsState.alertChildren,
         );
 
         final double panelOrAlertTarget = switch ((
-          alertsState.alerts.length,
-          alertsState.isAnimatingBack,
+          alertsState.howManyCurrentAlerts,
+          alertsState.getAnimatingBack,
         )) {
           (0, _) => 0,
           (1, true) => 0,
@@ -115,7 +113,7 @@ class _Panel extends StatelessWidget {
                   }
                 },
                 t: switch ((
-                  alertsState.alerts.length,
+                  alertsState.howManyCurrentAlerts,
                   alertsState.openedFirstAlertFromExpandedPanel,
                 )) {
                   (1, false) => 1,

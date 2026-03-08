@@ -1,15 +1,9 @@
 part of '../../panel_frame.dart';
 
 class PanelHeader extends StatelessWidget {
-  const PanelHeader({
-    super.key,
-    this.title,
-    this.subtitle,
-    this.showDragHandle,
-  });
+  const PanelHeader({super.key, this.title, this.showDragHandle});
 
   final Widget? title;
-  final Widget? subtitle;
   final bool? showDragHandle;
 
   @override
@@ -38,7 +32,9 @@ class PanelHeader extends StatelessWidget {
                     Center(
                       child: Pad(
                         vertical: canGoBack ? layout.padding.smaller : 0,
-                        child: PanelDragHandle(),
+                        child: PanelDragHandle(
+                          smallerVerticalMargin: title != null,
+                        ),
                       ),
                     ),
                     if (canGoBack)
@@ -58,8 +54,17 @@ class PanelHeader extends StatelessWidget {
                       ),
                   ],
                 ),
-              ?title,
-              ?subtitle,
+              if (title case Widget title)
+                Pad(
+                  bottom: layout.padding.medium,
+                  child: DefaultTextStyle(
+                    style: DefaultTextStyle.of(
+                      context,
+                    ).style.merge(theme.textTheme.titleMedium),
+                    textAlign: TextAlign.center,
+                    child: title,
+                  ),
+                ),
             ],
           ),
         ),
@@ -69,7 +74,9 @@ class PanelHeader extends StatelessWidget {
 }
 
 class PanelDragHandle extends StatelessWidget {
-  const PanelDragHandle({super.key});
+  const PanelDragHandle({super.key, this.smallerVerticalMargin = false});
+
+  final bool smallerVerticalMargin;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +85,9 @@ class PanelDragHandle extends StatelessWidget {
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: layout.margin.large,
-        vertical: layout.margin.medium,
+        vertical: smallerVerticalMargin
+            ? layout.margin.small
+            : layout.margin.medium,
       ),
       width: layout.margin.large * 2,
       height: layout.spacing.medium,
