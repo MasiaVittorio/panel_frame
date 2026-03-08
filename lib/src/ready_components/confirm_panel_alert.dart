@@ -23,6 +23,7 @@ class ConfirmPanelAlert extends StatelessWidget {
     this.danger = true,
   });
 
+  // if not provided, the alert will pop true or false and the caller can decide what to do with that. if provided, the alert will still pop true or false, but this callback can be called immediately (before the panel animation is finished)
   final VoidCallback? onConfirmed;
   final Widget? title;
   final Widget? confirmLabel;
@@ -35,6 +36,9 @@ class ConfirmPanelAlert extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlternativesPanelAlert(
       title: title,
+      onSelected: (value) {
+        if (value) onConfirmed?.call();
+      },
       alternatives: [
         PanelAlternative(
           value: true,

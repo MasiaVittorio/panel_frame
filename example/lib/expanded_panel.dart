@@ -1,5 +1,7 @@
 import 'package:example/main.dart';
-import 'package:example/pages/panel_theme_page.dart';
+import 'package:example/pages/expanded_settings_page.dart';
+import 'package:example/pages/panel_alerts_page.dart';
+import 'package:example/pages/theme_page.dart';
 import 'package:flutter/material.dart';
 import 'package:sid_base/sid_base.dart';
 
@@ -18,13 +20,17 @@ class ExpandedPanel extends StatelessWidget {
             child: AnimatedPagedView(
               value: value,
               pages: const [
-                ViewPage(child: Placeholder(), value: PanelPage.alerts),
-                ViewPage(child: Placeholder(), value: PanelPage.settings),
-                ViewPage(child: PanelThemePage(), value: PanelPage.theme),
+                ViewPage(child: PanelAlertsPage(), value: PanelPage.alerts),
+                ViewPage(
+                  value: PanelPage.settings,
+                  child: ExpandedSettingsPage(),
+                ),
+                ViewPage(child: ThemePage(), value: PanelPage.theme),
               ],
             ),
           ),
           HorizontalNavigationBar(
+            height: 64,
             value: value,
             onChanged: pageVar.update,
             items: [

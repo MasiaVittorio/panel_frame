@@ -10,7 +10,9 @@ class HeaderedList extends StatelessWidget {
     this.wrapBottomChildWithSafeArea = true,
     this.addVerticalMarginAroundBottomChild = true,
   }) : height = null,
-       shrinkWrap = true;
+       shrinkWrap = true,
+       floatingBottom = false;
+
   const HeaderedList.expand({
     super.key,
     required this.children,
@@ -20,6 +22,7 @@ class HeaderedList extends StatelessWidget {
     this.bottom,
     this.wrapBottomChildWithSafeArea = true,
     this.addVerticalMarginAroundBottomChild = true,
+    this.floatingBottom = true,
   }) : shrinkWrap = false;
 
   final bool? showDragHandle;
@@ -31,10 +34,19 @@ class HeaderedList extends StatelessWidget {
 
   final double? height;
   final bool shrinkWrap;
+  final bool floatingBottom;
 
   @override
   Widget build(BuildContext context) {
     final header = PanelHeader(title: title, showDragHandle: showDragHandle);
+    final Widget? wrappedBottom = switch (bottom) {
+      null => null,
+      final Widget bottom => _WrappedBottom(
+        wrapWithSafeArea: wrapBottomChildWithSafeArea,
+        addVerticalMargin: addVerticalMarginAroundBottomChild,
+        child: bottom,
+      ),
+    };
 
     if (shrinkWrap) {
       return Column(
@@ -43,15 +55,27 @@ class HeaderedList extends StatelessWidget {
         children: [
           header,
           ...children,
-          if (bottom case Widget bottom)
-            _WrappedBottom(
-              wrapWithSafeArea: wrapBottomChildWithSafeArea,
-              addVerticalMargin: addVerticalMarginAroundBottomChild,
-              child: bottom,
-            )
-          else
-            Space.vertical(context.safe.bottom),
+          wrappedBottom ?? Space.vertical(context.safe.bottom),
         ],
+      );
+    }
+
+    LinearGradient getGradient() {
+      final style = PanelFrameStyle.of(context);
+      final headerColor = style.headerColor(context);
+
+      return LinearGradient(
+        colors: [
+          headerColor,
+          headerColor.withValues(
+            alpha: 0.70.rangeMap(to: (headerColor.a, 1), from: (0, 0.80)),
+          ),
+          headerColor.withValues(alpha: 1),
+          headerColor.withValues(alpha: 1),
+        ],
+        stops: [0, 0.5, 0.80, 1],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
       );
     }
 
@@ -78,19 +102,34 @@ class HeaderedList extends StatelessWidget {
                         child: IgnorePointer(ignoring: true, child: header),
                       ),
                       ...children,
+                      if (floatingBottom)
+                        if (wrappedBottom case Widget wrappedBottom)
+                          Opacity(
+                            opacity: 0,
+                            child: IgnorePointer(
+                              ignoring: true,
+                              child: wrappedBottom,
+                            ),
+                          ),
                     ],
                   ),
                 ),
                 Positioned(top: 0, left: 0, right: 0, child: header),
+                if (floatingBottom)
+                  if (wrappedBottom case Widget wrappedBottom)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        decoration: BoxDecoration(gradient: getGradient()),
+                        child: wrappedBottom,
+                      ),
+                    ),
               ],
             ),
           ),
-          if (bottom case Widget bottom)
-            _WrappedBottom(
-              wrapWithSafeArea: wrapBottomChildWithSafeArea,
-              addVerticalMargin: addVerticalMarginAroundBottomChild,
-              child: bottom,
-            ),
+          if (!floatingBottom) ?wrappedBottom,
         ],
       ),
     );

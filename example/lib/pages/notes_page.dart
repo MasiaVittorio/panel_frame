@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:panel_frame/panel_frame.dart';
 import 'package:sid_base/sid_base.dart';
@@ -11,24 +10,39 @@ class NotesPage extends StatefulWidget {
 }
 
 class _NotesPageState extends State<NotesPage> {
-  List<String> notes = [];
+  late PersistentReactive<List<String>> notes;
+
+  @override
+  void initState() {
+    super.initState();
+    notes = PersistentReactive<List<String>>(
+      [],
+      key: 'notes',
+      toJsonEncodable: (value) => {'notes': value},
+      fromJsonDecoded: (jsonDecoded) =>
+          List<String>.from(jsonDecoded['notes'] ?? []),
+    );
+  }
+
+  @override
+  void dispose() {
+    notes.dispose();
+    super.dispose();
+  }
 
   void addNote(String note) {
-    setState(() {
-      notes.add(note);
-    });
+    notes.value.add(note);
+    notes.refresh();
   }
 
   void removeNoteAt(int index) {
-    setState(() {
-      notes.removeAt(index);
-    });
+    notes.value.removeAt(index);
+    notes.refresh();
   }
 
   void changeNoteAt(int index, String newNote) {
-    setState(() {
-      notes[index] = newNote;
-    });
+    notes.value[index] = newNote;
+    notes.refresh();
   }
 
   @override
@@ -36,22 +50,23 @@ class _NotesPageState extends State<NotesPage> {
     final frame = context.panelFrame;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: ListView(
-        children: [
-          for (var i = 0; i < notes.length; i++)
-            NoteTile(
-              onChange: (value) => changeNoteAt(i, value),
-              onDelete: () => removeNoteAt(i),
-              note: notes[i],
-            ),
-        ].groupedCards(),
+      body: notes.build(
+        (context, value) => ListView(
+          children: [
+            for (var i = 0; i < value.length; i++)
+              NoteTile(
+                onChange: (value) => changeNoteAt(i, value),
+                onDelete: () => removeNoteAt(i),
+                note: value[i],
+              ),
+          ].groupedCards(),
+        ),
       ),
       floatingActionButton: FloatingActionButton.large(
         child: const Icon(Icons.add),
         onPressed: () async {
           final result = await InsertPanelAlert.show(
             context: context,
-
             label: 'New note',
           );
           if (!context.mounted) return;
@@ -98,36 +113,20 @@ class NoteTile extends StatelessWidget {
       }
     }
 
-    void promptDelete() async {
-      final result = await frame.showAlert(
+    void promptDelete() {
+      frame.showAlert(
         ConfirmPanelAlert.delete(
           title: Text(
             'Delete $note?',
             maxLines: 1,
             overflow: TextOverflow.fade,
           ),
+          onConfirmed: onDelete,
         ),
       );
-      if (!context.mounted) return;
-      if (result == true) onDelete();
     }
 
     final theme = context.theme;
-
-    void showOptions() async {
-      final result = await frame.showAlert(const NoteOptionsAlert());
-      if (!context.mounted) return;
-      switch (result) {
-        case _Option.delete:
-          promptDelete();
-        case _Option.edit:
-          edit();
-        case _Option.read:
-          frame.showSnackBar(
-            PanelSnackBar(child: Text('You chose to read $note')),
-          );
-      }
-    }
 
     return ListTile(
       title: Text(note),
@@ -138,41 +137,7 @@ class NoteTile extends StatelessWidget {
         ),
         onPressed: promptDelete,
       ),
-      onTap: showOptions,
+      onTap: edit,
     );
   }
 }
-
-class NoteOptionsAlert extends StatelessWidget {
-  const NoteOptionsAlert({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const AlternativesPanelAlert.grouped(
-      alternatives: [
-        [
-          PanelAlternative(
-            danger: true,
-            label: Text('Delete'),
-            icon: Icon(Icons.delete_forever_outlined),
-            value: _Option.delete,
-          ),
-          PanelAlternative(
-            label: Text('Edit'),
-            icon: Icon(Icons.edit),
-            value: _Option.edit,
-          ),
-        ],
-        [
-          PanelAlternative(
-            label: Text('Read'),
-            icon: Icon(Icons.read_more),
-            value: _Option.read,
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-enum _Option { delete, edit, read }

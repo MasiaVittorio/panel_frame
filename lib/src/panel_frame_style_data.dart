@@ -1,5 +1,7 @@
 part of '../panel_frame.dart';
 
+// TODO: separate the style into a data class and a defaults theme so that the dev can override the methods in the defaults from their theme, and the user can edit the cold-hard data in the style to persist that between sessions? idk
+
 class PanelFrameStyleData {
   final Duration duration;
   final Curve curve;

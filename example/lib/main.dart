@@ -36,6 +36,17 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
+  static PanelFrameStyleData get defaultStyle => PanelFrameStyleData(
+    collapsedPanelHeight: 56,
+    fullScreenExpandedPanel: true,
+    expandedPanelMargin: (_) => EdgeInsets.zero,
+    expandedPanelBorderRadius: (_) => 0,
+    computeOpenPanelTopBarOverlap: (_) => 0,
+    collapsedPanelBorderRadius: (_) => 28,
+    collapsedPanelBackgroundColor: (context) =>
+        context.theme.colorScheme.surfaceContainer,
+  );
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -50,22 +61,13 @@ enum BodyPage { alerts, snackbars, theme, notes, settings }
 enum PanelPage { theme, alerts, settings }
 
 class _MyHomePageState extends State<MyHomePage> {
-  PanelFrameStyleData style = PanelFrameStyleData(
-    collapsedPanelHeight: 56,
-    fullScreenExpandedPanel: true,
-    expandedPanelMargin: (_) => EdgeInsets.zero,
-    expandedPanelBorderRadius: (_) => 0,
-    computeOpenPanelTopBarOverlap: (_) => 0,
-    collapsedPanelBorderRadius: (_) => 28,
-    collapsedPanelBackgroundColor: (context) =>
-        context.theme.colorScheme.surfaceContainer,
-  );
+  PanelFrameStyleData style = MyHomePage.defaultStyle;
 
   void onStyleChanged(PanelFrameStyleData value) =>
       setState(() => style = value);
 
   Reactive<BodyPage> page = Reactive(BodyPage.alerts);
-  Reactive<PanelPage> panelPage = Reactive(PanelPage.theme);
+  Reactive<PanelPage> panelPage = Reactive(PanelPage.alerts);
 
   @override
   void dispose() {

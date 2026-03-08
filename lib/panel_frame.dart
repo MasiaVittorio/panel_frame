@@ -5,7 +5,6 @@ import 'package:call_to_action/call_to_action.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:keyboard_insets/keyboard_insets.dart';
 import 'package:panel_frame/panel_frame.dart';
 import 'package:panel_frame/src/override_media_query_padding.dart';
 import 'package:segmented_slider/segmented_slider.dart';

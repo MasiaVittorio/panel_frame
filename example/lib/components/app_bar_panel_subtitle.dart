@@ -9,7 +9,7 @@ class AppBarPanelSubtitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final panelPageVar = context.provide<Reactive<PanelPage>>();
     return panelPageVar.build((context, value) {
-      return Text(value.name.capitalizeFirst);
+      return AnimatedText(value.name.capitalizeFirst);
     });
   }
 }

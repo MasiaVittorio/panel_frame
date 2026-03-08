@@ -93,24 +93,33 @@ class _AnimatedPanel extends StatelessWidget {
               side: BorderSide.lerp(cb, eb, value),
             ),
           ),
-          // elevation: value.rangeMap(to: (ce, ee)),
-          child: ClipRRect(
-            clipBehavior: Clip.antiAlias,
-            borderRadius: borderRadius,
-            child: Material(
-              type: MaterialType.transparency,
-              child: GestureDetector(
-                onVerticalDragEnd: onDragEnd,
-                onVerticalDragUpdate: onDragUpdate,
-                child: Container(
-                  color: Colors.transparent,
-                  child: AnimatedSwitchingStack(
-                    forceExpandHorizontally: true,
-                    t: value,
-                    first: collapsedContents,
-                    second: expandedContents,
-                    firstParallax: collapsedParallax,
-                    secondParallax: expandedParallax,
+          child: DecoratedBox(
+            decoration: ShapeDecoration(
+              shape: RoundedRectangleBorder(
+                borderRadius: borderRadius,
+                side: BorderSide.lerp(cb, eb, value),
+              ),
+            ),
+            position: DecorationPosition.foreground,
+
+            child: ClipRRect(
+              clipBehavior: Clip.antiAlias,
+              borderRadius: borderRadius,
+              child: Material(
+                type: MaterialType.transparency,
+                child: GestureDetector(
+                  onVerticalDragEnd: onDragEnd,
+                  onVerticalDragUpdate: onDragUpdate,
+                  child: Container(
+                    color: Colors.transparent,
+                    child: AnimatedSwitchingStack(
+                      forceExpandHorizontally: true,
+                      t: value,
+                      first: collapsedContents,
+                      second: expandedContents,
+                      firstParallax: collapsedParallax,
+                      secondParallax: expandedParallax,
+                    ),
                   ),
                 ),
               ),
@@ -134,7 +143,7 @@ class _AnimatedPanel extends StatelessWidget {
   }
 }
 
-class FixedKeyboardHeight extends StatefulWidget {
+class FixedKeyboardHeight extends StatelessWidget {
   const FixedKeyboardHeight({
     super.key,
     required this.child,
@@ -150,23 +159,112 @@ class FixedKeyboardHeight extends StatefulWidget {
   builder;
 
   @override
-  State<FixedKeyboardHeight> createState() => _FixedKeyboardHeightState();
-}
-
-class _FixedKeyboardHeightState extends State<FixedKeyboardHeight> {
-  @override
   Widget build(BuildContext context) {
     final staticSafe = MediaQuery.viewPaddingOf(context).bottom;
-    return StreamBuilder(
-      stream: KeyboardInsets.insets,
-      builder: (context, snapshot) {
-        final double keyboard = snapshot.data ?? 0;
-        return widget.builder(
-          context,
-          keyboard <= 2 ? keyboard : keyboard + staticSafe,
-          widget.child,
-        );
-      },
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+
+    return _FixedKeyboardHeight(
+      staticSafe: staticSafe,
+      keyboard: keyboard,
+      builder: builder,
+      child: child,
     );
+  }
+}
+
+class _FixedKeyboardHeight extends StatefulWidget {
+  const _FixedKeyboardHeight({
+    required this.child,
+    required this.staticSafe,
+    required this.keyboard,
+    required this.builder,
+  });
+
+  final Widget? child;
+  final Widget Function(
+    BuildContext context,
+    double keyboardHeight,
+    Widget? child,
+  )
+  builder;
+
+  final double staticSafe;
+  final double keyboard;
+
+  @override
+  State<_FixedKeyboardHeight> createState() => _FixedKeyboardHeightState();
+}
+
+class _FixedKeyboardHeightState extends State<_FixedKeyboardHeight> {
+  late PersistentReactive<List<double>> lastFiveDebouncedKeyboardHeights;
+
+  @override
+  void initState() {
+    super.initState();
+    lastFiveDebouncedKeyboardHeights = PersistentReactive<List<double>>(
+      [],
+      key: 'last ten debounced keyboard heights',
+    );
+  }
+
+  @override
+  void dispose() {
+    lastFiveDebouncedKeyboardHeights.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant _FixedKeyboardHeight oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    debounceKeyboardHeight(widget.keyboard);
+  }
+
+  int _id = 0;
+  void debounceKeyboardHeight(double newHeight) async {
+    _id++;
+    // prevent overflow, we only care about relative values
+    if (_id > 1000000000) _id = 0;
+
+    final thisId = _id;
+    await Future.delayed(const Duration(milliseconds: 1200));
+    if (thisId != _id) return;
+    if (!mounted) return;
+    if (newHeight <= 10) return; // we only care about non-zero heights
+    print('//// debounced keyboard height: ${newHeight.toStringAsFixed(1)}');
+    lastFiveDebouncedKeyboardHeights.value.add(newHeight);
+    if (lastFiveDebouncedKeyboardHeights.value.length > 5) {
+      lastFiveDebouncedKeyboardHeights.value.removeAt(0);
+    }
+    lastFiveDebouncedKeyboardHeights.refresh(); // saves to storage
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double? favoriteKeyboardHeight;
+    if (lastFiveDebouncedKeyboardHeights.value.isNotEmpty) {
+      for (final h in lastFiveDebouncedKeyboardHeights.value) {
+        favoriteKeyboardHeight ??= h;
+        if (h != favoriteKeyboardHeight) {
+          favoriteKeyboardHeight = null;
+          break;
+        }
+      }
+    }
+    late double finalValue;
+    if (favoriteKeyboardHeight case double fav) {
+      if (widget.keyboard >= fav) {
+        finalValue = fav;
+      } else {
+        finalValue = (widget.keyboard + widget.staticSafe).clamp(0, fav);
+      }
+    } else {
+      finalValue = widget.keyboard;
+    }
+
+    print(
+      '//// fav: ${favoriteKeyboardHeight?.toStringAsFixed(1)} / current: ${widget.keyboard.toStringAsFixed(1)} / final: ${finalValue.toStringAsFixed(1)}',
+    );
+
+    return widget.builder(context, finalValue, widget.child);
   }
 }

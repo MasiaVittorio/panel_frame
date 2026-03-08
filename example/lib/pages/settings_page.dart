@@ -1,3 +1,4 @@
+import 'package:example/components/restore_default_style_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:panel_frame/panel_frame.dart';
 import 'package:sid_base/sid_base.dart';
@@ -15,99 +16,97 @@ class SettingsPage extends StatelessWidget {
     final layout = theme.layout;
 
     return ListView(
-      children: {
-        (title: 'Panel style', leading: const Icon(Icons.fullscreen)): [
-          ListTile(
-            leading: Icon(MdiIcons.borderRadius),
-            title: const Text('Collapsed panel height'),
-            trailing: Text(style.collapsedPanelHeight.toString()),
-            onTap: () {
-              onStyleChange(
-                style.copyWith(
-                  collapsedPanelHeight: switch (style.collapsedPanelHeight) {
+      children:
+          {
+            (
+              title: 'Collapsed panel',
+              leading: Icon(MdiIcons.unfoldLessHorizontal),
+            ): [
+              ListTile(
+                leading: Icon(MdiIcons.arrowExpandVertical),
+                title: const Text('Panel height'),
+                subtitle: Text(style.collapsedPanelHeight.toString()),
+                onTap: () {
+                  final previousRadius = style.collapsedPanelBorderRadius(
+                    context,
+                  );
+                  final bool wasRounded =
+                      previousRadius >= style.collapsedPanelHeight / 2;
+                  final double newHeight = switch (style.collapsedPanelHeight) {
                     56 => 64,
                     64 => 72,
                     _ => 56,
-                  },
+                  };
+                  onStyleChange(
+                    style.copyWith(
+                      collapsedPanelHeight: newHeight,
+                      collapsedPanelBorderRadius: wasRounded
+                          ? (_) => newHeight / 2
+                          : null,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(MdiIcons.borderRadius),
+                title: const Text('Border radius'),
+                subtitle: Text(
+                  style.collapsedPanelBorderRadius(context).toString(),
                 ),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(MdiIcons.borderRadius),
-            title: const Text('Collapsed panel radius'),
-            trailing: Text(
-              style.collapsedPanelBorderRadius(context).toString(),
-            ),
-            onTap: () {
-              onStyleChange(
-                style.copyWith(
-                  collapsedPanelBorderRadius: (_) =>
-                      style.collapsedPanelBorderRadius(context) ==
-                          style.collapsedPanelHeight / 2
-                      ? layout.radius.medium
-                      : style.collapsedPanelHeight / 2,
+                onTap: () {
+                  onStyleChange(
+                    style.copyWith(
+                      collapsedPanelBorderRadius: (_) =>
+                          style.collapsedPanelBorderRadius(context) ==
+                              style.collapsedPanelHeight / 2
+                          ? layout.radius.medium
+                          : style.collapsedPanelHeight / 2,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(MdiIcons.borderAllVariant),
+                title: const Text('Border'),
+                subtitle: Text(
+                  style.collapsedPanelBorderSide(context).width.toString(),
                 ),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(MdiIcons.borderRadius),
-            title: const Text('Expanded panel radius'),
-            trailing: Text(style.expandedPanelBorderRadius(context).toString()),
-            onTap: () {
-              onStyleChange(
-                style.copyWith(
-                  expandedPanelBorderRadius: (_) =>
-                      style.expandedPanelBorderRadius(context) == 0
-                      ? layout.radius.huge
-                      : 0,
+                onTap: () {
+                  onStyleChange(
+                    style.copyWith(
+                      collapsedPanelBorderSide:
+                          style.collapsedPanelBorderSide(context).width == 0
+                          ? (_) => BorderSide(
+                              color: theme.colorScheme.outline,
+                              width: 1,
+                            )
+                          : (_) => BorderSide.none,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(MdiIcons.panHorizontal),
+                title: const Text('Margin'),
+                subtitle: Text(
+                  style.collapsedPanelHorizontalMargin(context).toString(),
                 ),
-              );
-            },
+                onTap: () {
+                  onStyleChange(
+                    style.copyWith(
+                      collapsedPanelHorizontalMargin: (_) =>
+                          style.collapsedPanelHorizontalMargin(context) ==
+                              layout.margin.large
+                          ? layout.margin.small
+                          : layout.margin.large,
+                    ),
+                  );
+                },
+              ),
+            ],
+          }.groupedCards()..addAll(
+            [const RestoreDefaultStyleTile()].groupedCards(),
           ),
-          ListTile(
-            leading: Icon(MdiIcons.panHorizontal),
-            title: const Text('Expanded panel margin'),
-            trailing: Text(style.expandedPanelMargin(context).left.toString()),
-            onTap: () {
-              onStyleChange(
-                style.copyWith(
-                  expandedPanelMargin: (_) =>
-                      style.expandedPanelMargin(context).left == 0
-                      ? EdgeInsets.fromLTRB(
-                          layout.margin.large,
-                          layout.margin.large,
-                          layout.margin.large,
-                          layout.margin.large,
-                        )
-                      : EdgeInsets.zero,
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(MdiIcons.panVertical),
-            title: const Text('panel / app bar overlap'),
-            trailing: Text(style.openPanelTopBarOverlap.toString()),
-            onTap: () {
-              onStyleChange(
-                style.copyWith(
-                  computeOpenPanelTopBarOverlap: switch (style
-                      .openPanelTopBarOverlap) {
-                    final double over
-                        when style.collapsedPanelHeight / 2 == over =>
-                      (_) => 0,
-                    0 => (_) => -layout.margin.large,
-                    _ =>
-                      PanelFrameStyleData.defaultComputeOpenPanelTopBarOverlap,
-                  },
-                ),
-              );
-            },
-          ),
-        ],
-      }.groupedCards(),
     );
   }
 }

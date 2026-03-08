@@ -25,7 +25,7 @@ class CollapsedPanel extends StatelessWidget {
               child: IconButton(
                 onPressed: () =>
                     panelFrame.showAlert(const MyAlert(height: 400)),
-                icon: const Icon(Icons.horizontal_split_rounded),
+                icon: Icon(MdiIcons.dockBottom),
                 style: FrameAppBar.buttonStyle(context.theme),
               ),
             ),
