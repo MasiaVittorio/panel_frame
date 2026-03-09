@@ -29,6 +29,7 @@ class _Body extends StatelessWidget {
                   style.bodyParallaxMultiplier,
             ),
             child: OverrideMediaQueryPadding(
+              alsoViewPadding: true, // for scaffold's fab location
               bottom: style.collapsedPanelHeight / 2,
               top: 0,
               child: child!,

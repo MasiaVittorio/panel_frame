@@ -37,7 +37,7 @@ class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
   static PanelFrameStyleData get defaultStyle => PanelFrameStyleData(
-    collapsedPanelHeight: 56,
+    collapsedPanelHeight: 12,
     fullScreenExpandedPanel: true,
     expandedPanelMargin: (_) => EdgeInsets.zero,
     expandedPanelBorderRadius: (_) => 0,

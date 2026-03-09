@@ -54,6 +54,8 @@ class _SnackBar extends StatelessWidget {
       style.collapsedPanelBorderRadius(context),
     );
 
+    final frame = context.panelFrame;
+
     final Widget insideContent = Pad(
       horizontal: layout.margin.large,
       child: Center(child: snackBar.child),
@@ -78,7 +80,10 @@ class _SnackBar extends StatelessWidget {
                   highlightColor: Colors.transparent,
                   containedInkWell: false,
                   borderRadius: radius,
-                  onTap: action.onPressed,
+                  onTap: () {
+                    action.onPressed();
+                    frame.closeSnackBar();
+                  },
                   child: Center(child: action.icon),
                 ),
               ),
@@ -135,9 +140,7 @@ class _SnackBar extends StatelessWidget {
                         child: Material(
                           color: theme.colorScheme.primary,
                           child: InkWell(
-                            onTap: value >= 0.9
-                                ? context.panelFrame.closeSnackBar
-                                : null,
+                            onTap: value >= 0.9 ? frame.closeSnackBar : null,
                             child: Center(
                               child: Opacity(
                                 opacity: closeOpacity,

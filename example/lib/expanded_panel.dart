@@ -17,16 +17,23 @@ class ExpandedPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: AnimatedPagedView(
-              value: value,
-              pages: const [
-                ViewPage(child: PanelAlertsPage(), value: PanelPage.alerts),
-                ViewPage(
-                  value: PanelPage.settings,
-                  child: ExpandedSettingsPage(),
-                ),
-                ViewPage(child: ThemePage(), value: PanelPage.theme),
-              ],
+            child: MediaQuery.removePadding(
+              context: context,
+              removeBottom: true,
+              child: AnimatedPagedView(
+                value: value,
+                pages: const [
+                  ViewPage(child: PanelAlertsPage(), value: PanelPage.alerts),
+                  ViewPage(
+                    value: PanelPage.settings,
+                    child: ExpandedSettingsPage(),
+                  ),
+                  ViewPage(
+                    child: ThemePage(withHeader: true),
+                    value: PanelPage.theme,
+                  ),
+                ],
+              ),
             ),
           ),
           HorizontalNavigationBar(

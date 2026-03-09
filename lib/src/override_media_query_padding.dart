@@ -6,10 +6,12 @@ class OverrideMediaQueryPadding extends StatelessWidget {
     this.bottom,
     this.top,
     required this.child,
+    this.alsoViewPadding = false,
   });
   final double? bottom;
   final double? top;
   final Widget child;
+  final bool alsoViewPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +19,9 @@ class OverrideMediaQueryPadding extends StatelessWidget {
     return MediaQuery(
       data: mq.copyWith(
         padding: mq.padding.copyWith(bottom: bottom, top: top),
+        viewPadding: alsoViewPadding
+            ? mq.viewPadding.copyWith(bottom: bottom, top: top)
+            : null,
       ),
       child: child,
     );

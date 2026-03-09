@@ -45,23 +45,37 @@ class _NotesPageState extends State<NotesPage> {
     notes.refresh();
   }
 
+  void restoreNoteAt(int index, String note) {
+    notes.value.insert(index, note);
+    notes.refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     final frame = context.panelFrame;
+    const fabSize = 96;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: notes.build(
-        (context, value) => ListView(
+      body: notes.build((context, value) {
+        return ListView(
+          padding: EdgeInsets.only(
+            bottom:
+                context.safe.bottom +
+                fabSize +
+                context.theme.layout.margin.medium,
+          ),
           children: [
             for (var i = 0; i < value.length; i++)
-              NoteTile(
-                onChange: (value) => changeNoteAt(i, value),
-                onDelete: () => removeNoteAt(i),
-                note: value[i],
-              ),
+              if (value[i] case String note)
+                NoteTile(
+                  onChange: (value) => changeNoteAt(i, value),
+                  onDelete: () => removeNoteAt(i),
+                  note: note,
+                  onRestore: () => restoreNoteAt(i, note),
+                ),
           ].groupedCards(),
-        ),
-      ),
+        );
+      }),
       floatingActionButton: FloatingActionButton.large(
         child: const Icon(Icons.add),
         onPressed: () async {
@@ -91,11 +105,13 @@ class NoteTile extends StatelessWidget {
     required this.onChange,
     required this.onDelete,
     required this.note,
+    required this.onRestore,
   });
 
   final ValueChanged<String> onChange;
   final VoidCallback onDelete;
   final String note;
+  final VoidCallback onRestore;
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +137,18 @@ class NoteTile extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.fade,
           ),
-          onConfirmed: onDelete,
+          onConfirmed: () {
+            onDelete();
+            frame.showSnackBar(
+              PanelSnackBar(
+                child: Text('Deleted note: $note'),
+                action: PanelSnackBarAction(
+                  icon: const Icon(Icons.undo),
+                  onPressed: onRestore,
+                ),
+              ),
+            );
+          },
         ),
       );
     }

@@ -204,6 +204,10 @@ class _FixedKeyboardHeightState extends State<_FixedKeyboardHeight> {
     lastFiveDebouncedKeyboardHeights = PersistentReactive<List<double>>(
       [],
       key: 'last ten debounced keyboard heights',
+      toJsonEncodable: (List<double> value) => {'values': value},
+      fromJsonDecoded: (jsonDecoded) => <double>[
+        for (final v in (jsonDecoded['values'] as List)) v as double,
+      ],
     );
   }
 
@@ -230,7 +234,6 @@ class _FixedKeyboardHeightState extends State<_FixedKeyboardHeight> {
     if (thisId != _id) return;
     if (!mounted) return;
     if (newHeight <= 10) return; // we only care about non-zero heights
-    print('//// debounced keyboard height: ${newHeight.toStringAsFixed(1)}');
     lastFiveDebouncedKeyboardHeights.value.add(newHeight);
     if (lastFiveDebouncedKeyboardHeights.value.length > 5) {
       lastFiveDebouncedKeyboardHeights.value.removeAt(0);
@@ -252,7 +255,9 @@ class _FixedKeyboardHeightState extends State<_FixedKeyboardHeight> {
     }
     late double finalValue;
     if (favoriteKeyboardHeight case double fav) {
-      if (widget.keyboard >= fav) {
+      if (widget.keyboard == 0) {
+        finalValue = 0;
+      } else if (widget.keyboard >= fav) {
         finalValue = fav;
       } else {
         finalValue = (widget.keyboard + widget.staticSafe).clamp(0, fav);
@@ -260,10 +265,6 @@ class _FixedKeyboardHeightState extends State<_FixedKeyboardHeight> {
     } else {
       finalValue = widget.keyboard;
     }
-
-    print(
-      '//// fav: ${favoriteKeyboardHeight?.toStringAsFixed(1)} / current: ${widget.keyboard.toStringAsFixed(1)} / final: ${finalValue.toStringAsFixed(1)}',
-    );
 
     return widget.builder(context, finalValue, widget.child);
   }
