@@ -8,12 +8,15 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onStyleChange = context.provide<ValueChanged<PanelFrameStyleData>>();
+    final onCustomizationsChanged = context
+        .provide<ValueChanged<PanelFrameStyleCustomizations>>();
 
     final style = PanelFrameStyle.of(context);
 
     final theme = context.theme;
     final layout = theme.layout;
+
+    final customizations = context.provide<PanelFrameStyleCustomizations>();
 
     return ListView(
       children:
@@ -27,9 +30,7 @@ class SettingsPage extends StatelessWidget {
                 title: const Text('Panel height'),
                 subtitle: Text(style.collapsedPanelHeight.toString()),
                 onTap: () {
-                  final previousRadius = style.collapsedPanelBorderRadius(
-                    context,
-                  );
+                  final previousRadius = style.collapsedPanelBorderRadius;
                   final bool wasRounded =
                       previousRadius >= style.collapsedPanelHeight / 2;
                   final double newHeight = switch (style.collapsedPanelHeight) {
@@ -37,11 +38,11 @@ class SettingsPage extends StatelessWidget {
                     64 => 72,
                     _ => 56,
                   };
-                  onStyleChange(
-                    style.copyWith(
+                  onCustomizationsChanged(
+                    customizations.copyWith(
                       collapsedPanelHeight: newHeight,
                       collapsedPanelBorderRadius: wasRounded
-                          ? (_) => newHeight / 2
+                          ? newHeight / 2
                           : null,
                     ),
                   );
@@ -50,14 +51,12 @@ class SettingsPage extends StatelessWidget {
               ListTile(
                 leading: Icon(MdiIcons.borderRadius),
                 title: const Text('Border radius'),
-                subtitle: Text(
-                  style.collapsedPanelBorderRadius(context).toString(),
-                ),
+                subtitle: Text(style.collapsedPanelBorderRadius.toString()),
                 onTap: () {
-                  onStyleChange(
-                    style.copyWith(
-                      collapsedPanelBorderRadius: (_) =>
-                          style.collapsedPanelBorderRadius(context) ==
+                  onCustomizationsChanged(
+                    customizations.copyWith(
+                      collapsedPanelBorderRadius:
+                          style.collapsedPanelBorderRadius ==
                               style.collapsedPanelHeight / 2
                           ? layout.radius.medium
                           : style.collapsedPanelHeight / 2,
@@ -68,19 +67,17 @@ class SettingsPage extends StatelessWidget {
               ListTile(
                 leading: Icon(MdiIcons.borderAllVariant),
                 title: const Text('Border'),
-                subtitle: Text(
-                  style.collapsedPanelBorderSide(context).width.toString(),
-                ),
+                subtitle: Text(style.collapsedPanelBorderSide.width.toString()),
                 onTap: () {
-                  onStyleChange(
-                    style.copyWith(
+                  onCustomizationsChanged(
+                    customizations.copyWith(
                       collapsedPanelBorderSide:
-                          style.collapsedPanelBorderSide(context).width == 0
-                          ? (_) => BorderSide(
+                          style.collapsedPanelBorderSide.width == 0
+                          ? BorderSide(
                               color: theme.colorScheme.outline,
                               width: 1,
                             )
-                          : (_) => BorderSide.none,
+                          : BorderSide.none,
                     ),
                   );
                 },
@@ -88,14 +85,12 @@ class SettingsPage extends StatelessWidget {
               ListTile(
                 leading: Icon(MdiIcons.panHorizontal),
                 title: const Text('Margin'),
-                subtitle: Text(
-                  style.collapsedPanelHorizontalMargin(context).toString(),
-                ),
+                subtitle: Text(style.collapsedPanelHorizontalMargin.toString()),
                 onTap: () {
-                  onStyleChange(
-                    style.copyWith(
-                      collapsedPanelHorizontalMargin: (_) =>
-                          style.collapsedPanelHorizontalMargin(context) ==
+                  onCustomizationsChanged(
+                    customizations.copyWith(
+                      collapsedPanelHorizontalMargin:
+                          style.collapsedPanelHorizontalMargin ==
                               layout.margin.large
                           ? layout.margin.small
                           : layout.margin.large,

@@ -36,24 +36,23 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
-  static PanelFrameStyleData get defaultStyle => PanelFrameStyleData(
-    collapsedPanelHeight: 12,
-    fullScreenExpandedPanel: true,
-    expandedPanelMargin: (_) => EdgeInsets.zero,
-    expandedPanelBorderRadius: (_) => 0,
-    computeOpenPanelTopBarOverlap: (_) => 0,
-    collapsedPanelBorderRadius: (_) => 28,
-    collapsedPanelBackgroundColor: (context) =>
-        context.theme.colorScheme.surfaceContainer,
-  );
+  static PanelFrameStyleCustomizations get defaultStyle =>
+      const PanelFrameStyleCustomizations(
+        collapsedPanelHeight: 64,
+        fullScreenExpandedPanel: true,
+        expandedPanelMargin: EdgeInsets.zero,
+        expandedPanelBorderRadius: 0,
+        openPanelTopBarOverlap: 0,
+        collapsedPanelBorderRadius: 32,
+      );
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 extension OnStyleChanged on BuildContext {
-  void changePanelStyle(PanelFrameStyleData value) =>
-      provide<ValueChanged<PanelFrameStyleData>>()(value);
+  void changePanelStyle(PanelFrameStyleCustomizations value) =>
+      provide<ValueChanged<PanelFrameStyleCustomizations>>()(value);
 }
 
 enum BodyPage { alerts, snackbars, theme, notes, settings }
@@ -61,10 +60,10 @@ enum BodyPage { alerts, snackbars, theme, notes, settings }
 enum PanelPage { theme, alerts, settings }
 
 class _MyHomePageState extends State<MyHomePage> {
-  PanelFrameStyleData style = MyHomePage.defaultStyle;
+  PanelFrameStyleCustomizations customizations = MyHomePage.defaultStyle;
 
-  void onStyleChanged(PanelFrameStyleData value) =>
-      setState(() => style = value);
+  void onStyleChanged(PanelFrameStyleCustomizations value) =>
+      setState(() => customizations = value);
 
   Reactive<BodyPage> page = Reactive(BodyPage.alerts);
   Reactive<PanelPage> panelPage = Reactive(PanelPage.alerts);
@@ -81,21 +80,24 @@ class _MyHomePageState extends State<MyHomePage> {
     return CleanProvider(
       data: onStyleChanged,
       child: CleanProvider(
-        data: panelPage,
+        data: customizations,
         child: CleanProvider(
-          data: page,
-          child: PanelFrame(
-            style: style,
-            collapsedPanel: const CollapsedPanel(),
-            expandedPanel: const ExpandedPanel(),
-            body: const MyBody(),
-            topBarChild: const AppBarTitle(),
-            topBarBuilder: (context, child, openValue) => FrameAppBar(
-              title: child!,
-              openValue: openValue,
-              panelSubtitle: const AppBarPanelSubtitle(),
+          data: panelPage,
+          child: CleanProvider(
+            data: page,
+            child: PanelFrame(
+              style: customizations,
+              collapsedPanel: const CollapsedPanel(),
+              expandedPanel: const ExpandedPanel(),
+              body: const MyBody(),
+              topBarChild: const AppBarTitle(),
+              topBarBuilder: (context, child, openValue) => FrameAppBar(
+                title: child!,
+                openValue: openValue,
+                panelSubtitle: const AppBarPanelSubtitle(),
+              ),
+              bottomBar: const MyBottomBar(),
             ),
-            bottomBar: const MyBottomBar(),
           ),
         ),
       ),

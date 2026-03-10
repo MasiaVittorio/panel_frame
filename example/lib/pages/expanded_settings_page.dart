@@ -8,14 +8,17 @@ class ExpandedSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onStyleChange = context.provide<ValueChanged<PanelFrameStyleData>>();
+    final onCustomizationsChanged = context
+        .provide<ValueChanged<PanelFrameStyleCustomizations>>();
 
     final style = PanelFrameStyle.of(context);
+
+    final customizations = context.provide<PanelFrameStyleCustomizations>();
 
     final theme = context.theme;
     final layout = theme.layout;
 
-    return HeaderedList.expand(
+    return PanelList.expand(
       children: [
         ...{
           (title: 'Top bar', leading: Icon(MdiIcons.dockTop)): [
@@ -24,8 +27,8 @@ class ExpandedSettingsPage extends StatelessWidget {
               title: const Text('Height'),
               subtitle: Text(style.topBarExpandedHeight.toString()),
               onTap: () {
-                onStyleChange(
-                  style.copyWith(
+                onCustomizationsChanged(
+                  customizations.copyWith(
                     topBarExpandedHeight: switch (style.topBarExpandedHeight) {
                       120 => 100,
                       100 => 72,
@@ -40,16 +43,15 @@ class ExpandedSettingsPage extends StatelessWidget {
               title: const Text('Overlap'),
               subtitle: Text(style.openPanelTopBarOverlap.toString()),
               onTap: () {
-                onStyleChange(
-                  style.copyWith(
-                    computeOpenPanelTopBarOverlap:
+                onCustomizationsChanged(
+                  customizations.copyWith(
+                    openPanelTopBarOverlap:
                         switch (style.openPanelTopBarOverlap) {
-                          0 => (_) => -layout.margin.large,
+                          0 => -layout.margin.large,
                           final double v when v == -layout.margin.large =>
-                            (_) =>
-                                style.expandedPanelMargin(context).top +
+                            style.expandedPanelMargin.top +
                                 style.collapsedPanelHeight / 2,
-                          _ => (_) => 0,
+                          _ => 0,
                         },
                   ),
                 );
@@ -60,14 +62,12 @@ class ExpandedSettingsPage extends StatelessWidget {
             ListTile(
               leading: Icon(MdiIcons.borderRadius),
               title: const Text('Border radius'),
-              subtitle: Text(
-                style.expandedPanelBorderRadius(context).toString(),
-              ),
+              subtitle: Text(style.expandedPanelBorderRadius.toString()),
               onTap: () {
-                onStyleChange(
-                  style.copyWith(
-                    expandedPanelBorderRadius: (_) =>
-                        style.expandedPanelBorderRadius(context) == 0
+                onCustomizationsChanged(
+                  customizations.copyWith(
+                    expandedPanelBorderRadius:
+                        style.expandedPanelBorderRadius == 0
                         ? layout.radius.huge
                         : 0,
                   ),
@@ -77,19 +77,14 @@ class ExpandedSettingsPage extends StatelessWidget {
             ListTile(
               leading: Icon(MdiIcons.borderAllVariant),
               title: const Text('Border'),
-              subtitle: Text(
-                style.expandedPanelBorderSide(context).width.toString(),
-              ),
+              subtitle: Text(style.expandedPanelBorderSide.width.toString()),
               onTap: () {
-                onStyleChange(
-                  style.copyWith(
+                onCustomizationsChanged(
+                  customizations.copyWith(
                     expandedPanelBorderSide:
-                        style.expandedPanelBorderSide(context).width == 0
-                        ? (_) => BorderSide(
-                            color: theme.colorScheme.outline,
-                            width: 1,
-                          )
-                        : (_) => BorderSide.none,
+                        style.expandedPanelBorderSide.width == 0
+                        ? BorderSide(color: theme.colorScheme.outline, width: 1)
+                        : BorderSide.none,
                   ),
                 );
               },
@@ -97,14 +92,11 @@ class ExpandedSettingsPage extends StatelessWidget {
             ListTile(
               leading: Icon(MdiIcons.panHorizontal),
               title: const Text('Margin'),
-              subtitle: Text(
-                style.expandedPanelMargin(context).left.toString(),
-              ),
+              subtitle: Text(style.expandedPanelMargin.left.toString()),
               onTap: () {
-                onStyleChange(
-                  style.copyWith(
-                    expandedPanelMargin: (_) =>
-                        style.expandedPanelMargin(context).left == 0
+                onCustomizationsChanged(
+                  customizations.copyWith(
+                    expandedPanelMargin: style.expandedPanelMargin.left == 0
                         ? EdgeInsets.fromLTRB(
                             layout.margin.large,
                             layout.margin.large,
@@ -123,8 +115,8 @@ class ExpandedSettingsPage extends StatelessWidget {
                 style.barrierColor == Colors.black54 ? 'Black' : 'Primary',
               ),
               onTap: () {
-                onStyleChange(
-                  style.copyWith(
+                onCustomizationsChanged(
+                  customizations.copyWith(
                     barrierColor: style.barrierColor == Colors.black54
                         ? theme.colorScheme.primaryContainer.withValues(
                             alpha: 0.5,

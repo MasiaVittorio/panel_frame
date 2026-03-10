@@ -15,7 +15,7 @@ class FullScreenAlert extends StatelessWidget implements PanelAlertWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HeaderedList.expand(
+    return PanelList.expand(
       children: {
         (title: 'Alerts', leading: const Icon(Icons.warning_outlined)): [
           const SmallAlertTile(),

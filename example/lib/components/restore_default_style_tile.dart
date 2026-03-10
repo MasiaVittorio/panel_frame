@@ -8,7 +8,8 @@ class RestoreDefaultStyleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onStyleChange = context.provide<ValueChanged<PanelFrameStyleData>>();
+    final onStyleChange = context
+        .provide<ValueChanged<PanelFrameStyleCustomizations>>();
 
     return ListTile(
       onTap: () => context.panelFrame.showAlert(

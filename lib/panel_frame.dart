@@ -6,37 +6,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:panel_frame/panel_frame.dart';
-import 'package:panel_frame/src/override_media_query_padding.dart';
 import 'package:segmented_slider/segmented_slider.dart';
 import 'package:sid_base/sid_base.dart';
 
-part 'src/alerts_state.dart';
-part 'src/animated_padding_builder.dart';
-part 'src/animated_panel.dart';
-part 'src/animated_switching_stack.dart';
-part 'src/barrier.dart';
-part 'src/body.dart';
-part 'src/bottom_bar.dart';
-part 'src/bottom_gestures.dart';
-part 'src/expanded_margin_builder.dart';
-part 'src/panel.dart';
-part 'src/panel_alert_contents.dart';
-part 'src/panel_alert_widget.dart';
-part 'src/panel_frame_layout.dart';
-part 'src/panel_frame_logic.dart';
-part 'src/panel_frame_style.dart';
-part 'src/panel_frame_style_data.dart';
-part 'src/proportional_stack.dart';
-part 'src/ready_components/alternatives_panel_alert.dart';
-part 'src/ready_components/color_picker_panel.dart';
-part 'src/ready_components/confirm_panel_alert.dart';
-part 'src/ready_components/frame_app_bar.dart';
-part 'src/ready_components/headered_list.dart';
-part 'src/ready_components/insert_panel_alert.dart';
-part 'src/ready_components/panel_header.dart';
-part 'src/ready_components/theme_variant_picker.dart';
-part 'src/snackbar.dart';
-part 'src/top_bar.dart';
+part 'src/state/alerts_state.dart';
+part 'src/theming/panel_frame_defaults_theme.dart';
+part 'src/theming/panel_frame_resolved_style.dart';
+part 'src/theming/panel_frame_style_customizations.dart';
+part 'src/user_classes.dart';
+part 'src/widgets/custom_renders/animated_padding_builder.dart';
+part 'src/widgets/custom_renders/animated_switching_stack.dart';
+part 'src/widgets/custom_renders/proportional_stack.dart';
+part 'src/widgets/inherited_widgets/panel_frame_defaults_theme.dart';
+part 'src/widgets/inherited_widgets/panel_frame_style.dart';
+part 'src/widgets/private_components/animated_panel.dart';
+part 'src/widgets/private_components/barrier.dart';
+part 'src/widgets/private_components/body.dart';
+part 'src/widgets/private_components/bottom_bar.dart';
+part 'src/widgets/private_components/bottom_gestures.dart';
+part 'src/widgets/private_components/expanded_margin_builder.dart';
+part 'src/widgets/private_components/override_media_query_padding.dart';
+part 'src/widgets/private_components/panel.dart';
+part 'src/widgets/private_components/panel_alert_contents.dart';
+part 'src/widgets/private_components/panel_frame_layout.dart';
+part 'src/widgets/private_components/snackbar.dart';
+part 'src/widgets/private_components/top_bar.dart';
+part 'src/widgets/user_components/alternatives_panel_alert.dart';
+part 'src/widgets/user_components/color_picker_panel.dart';
+part 'src/widgets/user_components/confirm_panel_alert.dart';
+part 'src/widgets/user_components/frame_app_bar.dart';
+part 'src/widgets/user_components/insert_panel_alert.dart';
+part 'src/widgets/user_components/panel_header.dart';
+part 'src/widgets/user_components/panel_list.dart';
+part 'src/widgets/user_components/theme_variant_picker.dart';
 
 extension PanelFrameStateExtension on BuildContext {
   PanelFrameState get panelFrame => provide<PanelFrameState>();
@@ -64,25 +66,39 @@ class PanelFrame extends StatelessWidget {
   topBarBuilder;
   final Widget? topBarChild;
 
-  final PanelFrameStyleData? style;
+  final PanelFrameStyleCustomizations? style;
 
   @override
   Widget build(BuildContext context) {
-    final style =
-        this.style ??
-        PanelFrameStyle.maybeOf(context) ??
-        PanelFrameStyleData.defaultStyle;
-    return PanelFrameStyle(
-      style: style,
-      child: _PanelFrame(
-        collapsedPanel: collapsedPanel,
-        expandedPanel: expandedPanel,
-        body: body,
-        topBarBuilder: topBarBuilder,
-        bottomBar: bottomBar,
-        topBarChild: topBarChild,
-        style: style,
-      ),
+    final customizations = style ?? const PanelFrameStyleCustomizations();
+    final defaults = PanelFrameDefaultsTheme.of(context);
+    final theme = context.theme;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final resolved = PanelFrameStyleData._from(
+          theme: theme,
+          context: context,
+          customizations: customizations,
+          defaults: defaults,
+          constraints: constraints,
+        );
+        return ConstrainedBox(
+          constraints: constraints,
+          child: PanelFrameStyle(
+            data: resolved,
+            child: _PanelFrame(
+              collapsedPanel: collapsedPanel,
+              expandedPanel: expandedPanel,
+              body: body,
+              topBarBuilder: topBarBuilder,
+              bottomBar: bottomBar,
+              topBarChild: topBarChild,
+              style: resolved,
+            ),
+          ),
+        );
+      },
     );
   }
 }
