@@ -11,17 +11,32 @@ class PanelFrameDefaultsThemeData {
 
   BorderSide expandedPanelBorderSide(BuildContext context, ThemeData theme) =>
       BorderSide.none;
+  BorderSide alertsBorderSide(BuildContext context, ThemeData theme) =>
+      BorderSide.none;
 
   double collapsedPanelBorderRadius(BuildContext context, ThemeData theme) =>
       theme.layout.radius.large;
 
   double expandedPanelBorderRadius(BuildContext context, ThemeData theme) =>
       context.theme.layout.radius.small;
+  double alertsBorderRadius(BuildContext context, ThemeData theme) =>
+      context.theme.layout.radius.small;
 
   EdgeInsets expandedPanelMargin(BuildContext context, ThemeData theme) {
     final s = theme.layout.margin.small;
     return EdgeInsets.fromLTRB(s, 0, s, s);
   }
+
+  EdgeInsets alertsMargin(BuildContext context, ThemeData theme) =>
+      EdgeInsets.all(theme.layout.margin.small);
+
+  List<BoxShadow>? collapsedShadows(BuildContext context, ThemeData theme) =>
+      null;
+
+  List<BoxShadow>? expandedShadows(BuildContext context, ThemeData theme) =>
+      null;
+
+  List<BoxShadow>? alertsShadows(BuildContext context, ThemeData theme) => null;
 
   /// only left and right are important, bottom will be added based on the bottom bar height since the PanelFrame widget will only accept a PreferredSizeWidget there
   double collapsedPanelHorizontalMargin(
@@ -38,6 +53,9 @@ class PanelFrameDefaultsThemeData {
       theme.colorScheme.surfaceContainer;
 
   Color expandedPanelBackgroundColor(BuildContext context, ThemeData theme) =>
+      theme.colorScheme.surface;
+
+  Color alertsBackgroundColor(BuildContext context, ThemeData theme) =>
       theme.colorScheme.surface;
 
   Color topBarCollapsedBackgroundColor(BuildContext context, ThemeData theme) =>

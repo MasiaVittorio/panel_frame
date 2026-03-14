@@ -1,21 +1,37 @@
 part of '../panel_frame.dart';
 
-mixin PanelAlertWidget on Widget {
-  bool? get wantsToBeFullScreen;
+/// class MyFullScreenWidget extends StatelessWidget with PanelAlert {
+///   const MyFullScreenWidget({super.key});
+///
+///   @override
+///   Widget build(BuildContext context) {
+///     return const Placeholder();
+///   }
+///
+///   @override
+///   bool? get wantsToBeFullScreen => false; // never full screen
+/// }
+mixin PanelAlert on Widget {
+  bool? get overrideCanCoverViewPadding => null;
   EdgeInsets? get overridePanelMargin => null;
 }
 
-// class MyFullScreenWidget extends StatelessWidget with PanelAlertWidget {
-//   const MyFullScreenWidget({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Placeholder();
-//   }
-//
-//   @override
-//   bool? get wantsToBeFullScreen => true;
-// }
+/// class MyFullScreenWidget extends StatelessWidget
+///     with PanelAlert, FullScreenPanelAlert {
+///   const MyFullScreenWidget({super.key});
+///
+///   @override
+///   Widget build(BuildContext context) {
+///     return const Placeholder();
+///   }
+/// }
+mixin FullScreenPanelAlert on PanelAlert {
+  @override
+  bool? get overrideCanCoverViewPadding => true;
+
+  @override
+  EdgeInsets? get overridePanelMargin => EdgeInsets.zero;
+}
 
 class PanelSnackBarAction {
   final Widget icon;

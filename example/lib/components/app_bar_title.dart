@@ -11,7 +11,7 @@ class AppBarTitle extends StatelessWidget {
     final frame = context.panelFrame;
     final pageVar = context.provide<Reactive<BodyPage>>();
     return pageVar.build((context, page) {
-      return frame.buildFromIsAppBarExpanded(
+      return frame.buildWithIsTopBarExpanded(
         builder: (context, value) {
           return AnimatedText(
             value ? "Opened panel" : page.name.capitalizeFirst,

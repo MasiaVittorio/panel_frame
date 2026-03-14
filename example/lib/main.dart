@@ -39,11 +39,11 @@ class MyHomePage extends StatefulWidget {
   static PanelFrameStyleCustomizations get defaultStyle =>
       const PanelFrameStyleCustomizations(
         collapsedPanelHeight: 64,
-        fullScreenExpandedPanel: true,
         expandedPanelMargin: EdgeInsets.zero,
         expandedPanelBorderRadius: 0,
         openPanelTopBarOverlap: 0,
         collapsedPanelBorderRadius: 32,
+        alertsMargin: EdgeInsets.zero,
       );
 
   @override

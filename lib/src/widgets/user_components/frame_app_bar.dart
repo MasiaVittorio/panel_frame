@@ -33,8 +33,7 @@ class FrameAppBar extends StatelessWidget {
     final theme = context.theme;
     final layout = theme.layout;
     final frame = context.panelFrame;
-    final isExpanded = frame._isAppBarExpanded;
-    final isAlert = frame._isShowingAlert;
+    final frameStyle = context.panelFrameStyle;
 
     return Material(
       child: SafeArea(
@@ -50,14 +49,16 @@ class FrameAppBar extends StatelessWidget {
                   child: IconButton(
                     style: buttonStyle(theme),
                     onPressed: frame.togglePanel,
-                    icon: isExpanded.build((context, value) {
-                      return ImplicitlySwitchingIcon(
-                        firstIcon: AnimatedIcons.menu_close,
-                        secondIcon: AnimatedIcons.close_menu,
-                        duration: const Duration(milliseconds: 300),
-                        progress: value ? 1.0 : 0.0,
-                      );
-                    }),
+                    icon: frame.buildWithIsTopBarExpanded(
+                      builder: (context, value) {
+                        return ImplicitlySwitchingIcon(
+                          firstIcon: AnimatedIcons.menu_close,
+                          secondIcon: AnimatedIcons.close_menu,
+                          duration: const Duration(milliseconds: 300),
+                          progress: value ? 1.0 : 0.0,
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -82,26 +83,33 @@ class FrameAppBar extends StatelessWidget {
                           context,
                         ).style.merge(theme.textTheme.bodyMedium),
                         textAlign: TextAlign.center,
-                        child: isAlert.build((context, showing) {
-                          return GenericAnimatedBuilder(
-                            value: showing ? 0 : 1,
-                            child: child,
-                            builder: (context, value, child) {
-                              final keepSubtitleHidden =
-                                  frame._alertsState.howManyCurrentAlerts ==
-                                      1 &&
-                                  (!frame
-                                      ._alertsState
-                                      .openedFirstAlertFromExpandedPanel);
-                              return FractionallyListed(
-                                value: keepSubtitleHidden
-                                    ? 0
-                                    : openValue.rangeMap(to: (0, value)),
-                                child: child,
-                              );
-                            },
-                          );
-                        }),
+                        child: frame.buildWithAlertsCount(
+                          builder: (context, alerts) =>
+                              frame.buildWithAlertShownFromExpandedPanel(
+                                builder:
+                                    (context, wasAlertShownFromExpandedPanel) {
+                                      return GenericAnimatedBuilder(
+                                        value: alerts > 0 ? 0 : 1,
+                                        duration: frameStyle.duration,
+                                        curve: frameStyle.curve,
+                                        child: child,
+                                        builder: (context, value, child) {
+                                          final keepSubtitleHidden =
+                                              alerts == 1 &&
+                                              (!wasAlertShownFromExpandedPanel);
+                                          return FractionallyListed(
+                                            value: keepSubtitleHidden
+                                                ? 0
+                                                : openValue.rangeMap(
+                                                    to: (0, value),
+                                                  ),
+                                            child: child,
+                                          );
+                                        },
+                                      );
+                                    },
+                              ),
+                        ),
                       ),
                   ],
                 ),

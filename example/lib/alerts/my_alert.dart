@@ -1,3 +1,4 @@
+import 'package:example/alerts/full_screen_alert.dart';
 import 'package:example/components/full_alert_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:panel_frame/panel_frame.dart';
@@ -30,7 +31,7 @@ class MyAlert extends StatelessWidget {
           title: 'More space',
           leading: const Icon(Icons.vertical_align_center_outlined),
         ): [
-          const Space.vertical(600),
+          const LoremIpsum(),
         ],
       }.groupedCards(),
     );

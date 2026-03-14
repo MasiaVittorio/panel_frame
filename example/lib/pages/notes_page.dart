@@ -132,11 +132,7 @@ class NoteTile extends StatelessWidget {
     void promptDelete() {
       frame.showAlert(
         ConfirmPanelAlert.delete(
-          title: Text(
-            'Delete $note?',
-            maxLines: 1,
-            overflow: TextOverflow.fade,
-          ),
+          title: Text('Delete $note?', overflow: TextOverflow.fade),
           onConfirmed: () {
             onDelete();
             frame.showSnackBar(

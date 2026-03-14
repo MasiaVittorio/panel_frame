@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:panel_frame/panel_frame.dart';
+part of '../../panel_frame.dart';
 
-mixin MyPanelFrameState {
+mixin PanelFrameState {
   /// the future should complete immediately when the alert is dismissed, even if the back animation is still ongoing.
   /// if called again with a new alert while the previous alert has been dismissed but not finished its back animation, the new alert should immediately replace the old one, reverting the back animation
   Future<T?> showAlert<T>(Widget alert);
@@ -33,21 +32,36 @@ mixin MyPanelFrameState {
       int alertsCount,
       bool isSnackBarShown,
       bool isPanelOpen,
+      bool wasAlertShownFromExpandedPanel,
     )
     builder,
   });
+
   Widget buildWithIsTopBarExpanded({
     required Widget Function(BuildContext context, bool isTopBarExpanded)
     builder,
   });
+
   Widget buildWithAlertsCount({
     required Widget Function(BuildContext context, int alertsCount) builder,
   });
+
   Widget buildWithIsSnackBarShown({
     required Widget Function(BuildContext context, bool isSnackBarShown)
     builder,
   });
+
   Widget buildWithIsPanelOpen({
     required Widget Function(BuildContext context, bool isPanelOpen) builder,
   });
+
+  Widget buildWithAlertShownFromExpandedPanel({
+    required Widget Function(
+      BuildContext context,
+      bool wasAlertShownFromExpandedPanel,
+    )
+    builder,
+  });
+
+  ScrollPhysics get panelContentScrollPhysics;
 }

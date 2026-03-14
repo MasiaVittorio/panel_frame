@@ -2,63 +2,59 @@ part of '../../../panel_frame.dart';
 
 class _TopBar extends StatelessWidget {
   const _TopBar({
-    required this.controller,
-    required this.collapsedTopBarHeight,
-    required this.viewPadding,
-    required this.expandedTopBarHeight,
-    required this.topBarBuilder,
-    required this.topBarChild,
-    required this.alertsState,
     required this.barrier,
-    required this.duration,
-    required this.curve,
+    required this.panelAnimation,
+    required this.style,
+    required this.topBarChild,
+    required this.alerts,
+    required this.isAnimatingBack,
+    required this.openedFirstAlertFromExpandedPanel,
+    required this.topBarBuilder,
   });
 
   final _Barrier barrier;
-  final _AlertsState alertsState;
-  final AnimationController controller;
-  final double collapsedTopBarHeight;
-  final EdgeInsets viewPadding; // static, non keyboard
-  final double expandedTopBarHeight;
+  final AnimationController panelAnimation;
+  final PanelFrameStyleData style;
 
   final Widget Function(BuildContext context, Widget? child, double openValue)
   topBarBuilder;
   final Widget? topBarChild;
-  final Duration duration;
-  final Curve curve;
+
+  final Reactive<List<_PanelAlert>> alerts;
+  final Reactive<bool> isAnimatingBack;
+  final Reactive<bool> openedFirstAlertFromExpandedPanel;
 
   @override
   Widget build(BuildContext context) {
-    final e = expandedTopBarHeight + viewPadding.top;
-    final c = collapsedTopBarHeight + viewPadding.top;
+    final e = style.topBarExpandedHeight + style._viewPadding.top;
+    final c = style.topBarCollapsedHeight + style._viewPadding.top;
 
-    return ListenableBuilder(
-      listenable: alertsState,
-      builder: (context, child) {
-        double desiredExpandedHeight = e;
-        if (alertsState.isShowingAlert) {
-          desiredExpandedHeight = c;
-        }
-        if (alertsState.isGoingBackToExpandedPanelFromFirstAlert) {
-          desiredExpandedHeight = e;
-        }
-
+    return Reactive.build3(
+      alerts,
+      isAnimatingBack,
+      openedFirstAlertFromExpandedPanel,
+      builder: (context, alerts, animatingBack, toExpanded) {
+        final alertsCount = alerts.length;
+        final backFromFirst = animatingBack && alertsCount == 1;
+        final bool isShowingAlert = alertsCount > 0 && !backFromFirst;
         return GenericAnimatedBuilder(
-          value: desiredExpandedHeight,
-          duration: duration,
-          curve: curve,
-          builder: (context, animatedExpandedHeight, _) {
+          curve: style.curve,
+          duration: style.duration,
+          value: switch ((isShowingAlert, backFromFirst && toExpanded)) {
+            (true, false) => c,
+            _ => e,
+          },
+          child: topBarChild,
+          builder: (context, animatedExpandedHeight, topBarChild) {
             return ValueListenableBuilder(
-              valueListenable: controller,
+              valueListenable: panelAnimation,
               child: topBarChild,
               builder: (context, value, child) {
-                final definitiveHeight =
-                    alertsState.howManyCurrentAlerts == 1 &&
-                        !alertsState.openedFirstAlertFromExpandedPanel
+                final definitiveHeight = alertsCount == 1 && !toExpanded
                     ? c
                     : value.rangeMap(to: (c, animatedExpandedHeight));
 
-                final double barrierOpacity = !alertsState.isShowingAlert
+                final double barrierOpacity = !isShowingAlert
                     ? 0
                     : definitiveHeight.rangeMap(from: (e, c));
                 return Stack(

@@ -8,6 +8,7 @@ class ProportionalStack extends MultiChildRenderObjectWidget {
     required super.children,
     this.expandHorizontally = true,
     this.expandVertically = false,
+    this.onAllSizesChanged,
     this.onTargetSizeChanged,
     this.alignment = Alignment.center,
     this.ignoreFirstChildSize = false,
@@ -26,6 +27,7 @@ class ProportionalStack extends MultiChildRenderObjectWidget {
 
   /// You should NEVER trigger a rebuild with this callback, but if you need to cache the size of this widget for some reason, you can use this callback to be notified of size changes. It will be called at least once after the first layout, and then every time the size changes. The size is the one that was decided by the layout algorithm, so it will already take into account the constraints and the mainIndex.
   final void Function(Size size)? onTargetSizeChanged;
+  final void Function(List<Size> sizes)? onAllSizesChanged;
 
   final Alignment alignment;
 
@@ -36,6 +38,7 @@ class ProportionalStack extends MultiChildRenderObjectWidget {
       expandHorizontally: expandHorizontally,
       expandVertically: expandVertically,
       onTargetSizeChanged: onTargetSizeChanged,
+      onAllSizesChanged: onAllSizesChanged,
       alignment: alignment,
       ignoreFirstChildSize: ignoreFirstChildSize,
     );
@@ -50,6 +53,7 @@ class ProportionalStack extends MultiChildRenderObjectWidget {
     renderObject.expandHorizontally = expandHorizontally;
     renderObject.expandVertically = expandVertically;
     renderObject.onTargetSizeChanged = onTargetSizeChanged;
+    renderObject.onAllSizesChanged = onAllSizesChanged;
     renderObject.alignment = alignment;
     renderObject.ignoreFirstChildSize = ignoreFirstChildSize;
   }
@@ -100,10 +104,12 @@ class RenderProportionalStack extends RenderBox
   }
 
   void Function(Size size)? onTargetSizeChanged;
+  void Function(List<Size> sizes)? onAllSizesChanged;
 
   RenderProportionalStack({
     required double mainIndex,
     required this.onTargetSizeChanged,
+    required this.onAllSizesChanged,
     required Alignment alignment,
     required bool expandHorizontally,
     required bool expandVertically,
@@ -242,6 +248,11 @@ class RenderProportionalStack extends RenderBox
       }
 
       size = constraints.constrain(Size(width, height));
+
+      onAllSizesChanged?.call([
+        for (int i = 0; i < childWidths.length; i++)
+          Size(childWidths[i], childHeights[i]),
+      ]);
 
       onTargetSizeChanged?.call(
         Size(

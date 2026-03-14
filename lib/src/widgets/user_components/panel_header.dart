@@ -57,6 +57,7 @@ class PanelHeader extends StatelessWidget {
               if (title case Widget title)
                 Pad(
                   bottom: layout.padding.medium,
+                  horizontal: layout.margin.large,
                   child: DefaultTextStyle(
                     style: DefaultTextStyle.of(
                       context,

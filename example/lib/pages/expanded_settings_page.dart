@@ -1,3 +1,4 @@
+import 'package:example/alerts/full_screen_alert.dart';
 import 'package:example/components/restore_default_style_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:panel_frame/panel_frame.dart';
@@ -59,65 +60,25 @@ class ExpandedSettingsPage extends StatelessWidget {
             ),
           ],
           (title: 'Expanded panel', leading: const Icon(Icons.unfold_more)): [
-            ListTile(
-              leading: Icon(MdiIcons.borderRadius),
-              title: const Text('Border radius'),
-              subtitle: Text(style.expandedPanelBorderRadius.toString()),
-              onTap: () {
+            SwitchListTile(
+              title: const Text("Floating expanded panel"),
+              value: style.expandedPanelMargin.horizontal > 0,
+              onChanged: (value) {
                 onCustomizationsChanged(
                   customizations.copyWith(
-                    expandedPanelBorderRadius:
-                        style.expandedPanelBorderRadius == 0
-                        ? layout.radius.huge
+                    expandedPanelBorderRadius: value ? layout.radius.large : 0,
+                    openPanelTopBarOverlap: value
+                        ? style.collapsedPanelHeight / 2
                         : 0,
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(MdiIcons.borderAllVariant),
-              title: const Text('Border'),
-              subtitle: Text(style.expandedPanelBorderSide.width.toString()),
-              onTap: () {
-                onCustomizationsChanged(
-                  customizations.copyWith(
-                    expandedPanelBorderSide:
-                        style.expandedPanelBorderSide.width == 0
-                        ? BorderSide(color: theme.colorScheme.outline, width: 1)
-                        : BorderSide.none,
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(MdiIcons.panHorizontal),
-              title: const Text('Margin'),
-              subtitle: Text(style.expandedPanelMargin.left.toString()),
-              onTap: () {
-                onCustomizationsChanged(
-                  customizations.copyWith(
-                    expandedPanelMargin: style.expandedPanelMargin.left == 0
-                        ? EdgeInsets.fromLTRB(
-                            layout.margin.large,
-                            layout.margin.large,
-                            layout.margin.large,
-                            layout.margin.large,
-                          )
+                    expandedPanelMargin: value
+                        ? EdgeInsets.all(layout.margin.large).copyWith(top: 0)
                         : EdgeInsets.zero,
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(MdiIcons.vectorArrangeBelow),
-              title: const Text('Barrier color'),
-              subtitle: Text(
-                style.barrierColor == Colors.black54 ? 'Black' : 'Primary',
-              ),
-              onTap: () {
-                onCustomizationsChanged(
-                  customizations.copyWith(
-                    barrierColor: style.barrierColor == Colors.black54
+                    topBarExpandedHeight: value ? 120 : 100,
+                    expandedPanelCanCoverViewPadding: !value,
+                    expandedPanelBorderSide: value
+                        ? BorderSide(color: theme.colorScheme.outline)
+                        : BorderSide.none,
+                    barrierColor: value
                         ? theme.colorScheme.primaryContainer.withValues(
                             alpha: 0.5,
                           )
@@ -134,6 +95,7 @@ class ExpandedSettingsPage extends StatelessWidget {
           child: RestoreDefaultStyleTile(),
         ),
         Space.vertical(layout.margin.medium),
+        const GroupedCard(isFirst: true, isLast: true, child: LoremIpsum()),
       ],
     );
   }

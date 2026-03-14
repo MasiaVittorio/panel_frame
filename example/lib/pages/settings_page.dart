@@ -90,10 +90,13 @@ class SettingsPage extends StatelessWidget {
                   onCustomizationsChanged(
                     customizations.copyWith(
                       collapsedPanelHorizontalMargin:
-                          style.collapsedPanelHorizontalMargin ==
-                              layout.margin.large
-                          ? layout.margin.small
-                          : layout.margin.large,
+                          {
+                            layout.margin.small: layout.margin.medium,
+                            layout.margin.medium: layout.margin.large,
+                            layout.margin.large: layout.margin.huge,
+                            layout.margin.huge: layout.margin.small,
+                          }[style.collapsedPanelHorizontalMargin] ??
+                          layout.margin.medium,
                     ),
                   );
                 },
