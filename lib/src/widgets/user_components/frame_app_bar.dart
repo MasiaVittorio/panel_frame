@@ -77,38 +77,30 @@ class FrameAppBar extends StatelessWidget {
                       textAlign: TextAlign.center,
                       child: title,
                     ),
-                    if (panelSubtitle case final Widget child)
+                    if (panelSubtitle case final Widget subtitle)
                       DefaultTextStyle(
                         style: DefaultTextStyle.of(
                           context,
                         ).style.merge(theme.textTheme.bodyMedium),
                         textAlign: TextAlign.center,
-                        child: frame.buildWithAlertsCount(
-                          builder: (context, alerts) =>
-                              frame.buildWithAlertShownFromExpandedPanel(
-                                builder:
-                                    (context, wasAlertShownFromExpandedPanel) {
-                                      return GenericAnimatedBuilder(
-                                        value: alerts > 0 ? 0 : 1,
-                                        duration: frameStyle.duration,
-                                        curve: frameStyle.curve,
-                                        child: child,
-                                        builder: (context, value, child) {
-                                          final keepSubtitleHidden =
-                                              alerts == 1 &&
-                                              (!wasAlertShownFromExpandedPanel);
-                                          return FractionallyListed(
-                                            value: keepSubtitleHidden
-                                                ? 0
-                                                : openValue.rangeMap(
-                                                    to: (0, value),
-                                                  ),
-                                            child: child,
-                                          );
-                                        },
-                                      );
-                                    },
-                              ),
+                        child: frame._buildCanTopBarExpand(
+                          builder: (context, count, toPanel, canExpand) {
+                            final stayCollapsed = count == 1 && !toPanel;
+                            return GenericAnimatedBuilder(
+                              value: canExpand ? 1 : 0,
+                              duration: frameStyle.duration,
+                              curve: frameStyle.curve,
+                              child: subtitle,
+                              builder: (context, value, subtitle) {
+                                return FractionallyListed(
+                                  value: stayCollapsed
+                                      ? 0
+                                      : openValue.rangeMap(to: (0, value)),
+                                  child: subtitle,
+                                );
+                              },
+                            );
+                          },
                         ),
                       ),
                   ],

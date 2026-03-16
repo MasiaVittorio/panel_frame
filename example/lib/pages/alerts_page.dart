@@ -31,10 +31,22 @@ class AlertsPage extends StatelessWidget {
           ListTile(
             title: const Text("Insert alert"),
             leading: const Icon(Icons.text_fields),
-            onTap: () => InsertPanelAlert.show(
-              context: context,
-              label: 'Insert some text',
-            ),
+            onTap: () async {
+              final result = await InsertPanelAlert.show(
+                context: context,
+                label: 'Insert some text',
+              );
+              if (result case String text) {
+                if (!context.mounted) return;
+                frame.showSnackBar(
+                  PanelSnackBar(
+                    child: Text('You entered: $text'),
+                    dismissible: true,
+                    scrollable: true,
+                  ),
+                );
+              }
+            },
           ),
           ListTile(
             title: const Text("Alternatives alert"),
@@ -42,7 +54,7 @@ class AlertsPage extends StatelessWidget {
             onTap: () => context.panelFrame.showAlert(
               AlternativesPanelAlert.grouped(
                 title: const Text("Title"),
-                onSelected: (value) => frame.showSnackBar(
+                onSubmit: (value) => frame.showSnackBar(
                   PanelSnackBar(child: Text('Selected value: $value')),
                 ),
                 alternatives: const [
@@ -63,7 +75,7 @@ class AlertsPage extends StatelessWidget {
             onTap: () => frame.showAlert(
               AlternativesPanelAlert.grouped(
                 confirmationMode: AlternativeConfirmationMode.selectAndConfirm,
-                onSelected: (value) => frame.showSnackBar(
+                onSubmit: (value) => frame.showSnackBar(
                   PanelSnackBar(child: Text('Selected value: $value')),
                 ),
                 alternatives: const [
@@ -95,7 +107,7 @@ class AlertsPage extends StatelessWidget {
                   alertsBorderSide: value
                       ? BorderSide(color: theme.colorScheme.outline)
                       : BorderSide.none,
-                  barrierColor: value
+                  alertsBarrierColor: value
                       ? theme.colorScheme.primaryContainer.withValues(
                           alpha: 0.5,
                         )

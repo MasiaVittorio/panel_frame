@@ -39,7 +39,8 @@ class PanelFrameStyleCustomizations {
 
   final Color? scaffoldBackgroundColor;
   final Color? headerColor;
-  final Color barrierColor;
+  final Color alertsBarrierColor;
+  final Color panelBarrierColor;
   final Color? collapsedPanelBackgroundColor;
   final Color? expandedPanelBackgroundColor;
   final Color? alertsBackgroundColor;
@@ -69,7 +70,8 @@ class PanelFrameStyleCustomizations {
     this.collapsedShadows,
     this.alertsShadows,
     this.expandedShadows,
-    this.barrierColor = Colors.black54,
+    this.alertsBarrierColor = Colors.black54,
+    this.panelBarrierColor = Colors.black54,
     this.dismissOnBarrierTap = true,
     this.bodyParallax = 0.2,
     this.collapsedPanelParallax = 0.3,
@@ -112,7 +114,8 @@ class PanelFrameStyleCustomizations {
     List<BoxShadow>? alertsShadows,
     Color? scaffoldBackgroundColor,
     Color? headerColor,
-    Color? barrierColor,
+    Color? alertsBarrierColor,
+    Color? panelBarrierColor,
     Color? collapsedPanelBackgroundColor,
     Color? expandedPanelBackgroundColor,
     Color? alertsBackgroundColor,
@@ -159,7 +162,8 @@ class PanelFrameStyleCustomizations {
       scaffoldBackgroundColor:
           scaffoldBackgroundColor ?? this.scaffoldBackgroundColor,
       headerColor: headerColor ?? this.headerColor,
-      barrierColor: barrierColor ?? this.barrierColor,
+      alertsBarrierColor: alertsBarrierColor ?? this.alertsBarrierColor,
+      panelBarrierColor: panelBarrierColor ?? this.panelBarrierColor,
       collapsedPanelBackgroundColor:
           collapsedPanelBackgroundColor ?? this.collapsedPanelBackgroundColor,
       expandedPanelBackgroundColor:

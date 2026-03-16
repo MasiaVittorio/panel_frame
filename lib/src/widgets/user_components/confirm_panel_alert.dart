@@ -36,7 +36,7 @@ class ConfirmPanelAlert extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlternativesPanelAlert(
       title: title,
-      onSelected: (value) {
+      onSubmit: (value) {
         if (value) onConfirmed?.call();
       },
       alternatives: [

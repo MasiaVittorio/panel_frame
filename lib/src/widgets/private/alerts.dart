@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // ignore_for_file: unused_element_parameter
 
 part of '../../../panel_frame.dart';
@@ -12,7 +13,7 @@ class _Alerts extends StatelessWidget {
   });
 
   final PanelFrameStyleData style;
-  final List<Widget> alerts;
+  final List<_PanelAlert> alerts;
   final bool isAnimatingBack;
   final List<double> neededTopSafeAreas;
 
@@ -30,11 +31,11 @@ class _Alerts extends StatelessWidget {
     final List<double> bottomMargins = [];
     final List<BoxConstraints> precomputedConstraints = [];
     for (final alert in alerts) {
-      final topMargin = style._alertTopMargin(alert);
-      final bottomMargin = style._alertBottomMargin(alert);
+      final topMargin = style._alertTopMargin(alert.child);
+      final bottomMargin = style._alertBottomMargin(alert.child);
       bottomMargins.add(bottomMargin);
       precomputedConstraints.add(
-        style._alertBoxConstraints(topMargin, bottomMargin, alert),
+        style._alertBoxConstraints(topMargin, bottomMargin, alert.child),
       );
     }
 
@@ -58,7 +59,15 @@ class _Alerts extends StatelessWidget {
                     bottom: keyboardHeight < desiredBottom
                         ? desiredBottom - keyboardHeight
                         : 0,
-                    child: alerts[i],
+                    child: _SingleAlertSwitcher(
+                      duration: style.duration,
+                      curve: style.curve,
+                      constraints: precomputedConstraints[i],
+                      child: Builder(
+                        builder: (context) => alerts[i].child,
+                        key: ValueKey(alerts[i].id),
+                      ),
+                    ),
                   ),
                 ),
           ],
@@ -81,7 +90,7 @@ class _AnimatedAlerts extends StatelessWidget {
 
   final int index;
   final PanelFrameStyleData style;
-  final ValueChanged<List<double>> alertsHeightsUpdate;
+  final ValueChanged<List<double>>? alertsHeightsUpdate;
   final List<Widget> wrappedChildren;
   final List<BoxConstraints> precomputedConstraints;
 
@@ -93,6 +102,7 @@ class _AnimatedAlerts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final n = wrappedChildren.length;
     return GenericAnimatedBuilder(
       value: index.toDouble(),
       duration: style.duration,
@@ -100,10 +110,10 @@ class _AnimatedAlerts extends StatelessWidget {
       builder: (context, value, child) {
         return _AlertsStack(
           precomputedConstraints: precomputedConstraints,
-          mainIndex: value,
+          mainIndex: n == 1 ? 0.0 : value,
           alertsHeightsUpdate: alertsHeightsUpdate,
           children: [
-            for (int i = 0; i < wrappedChildren.length; i++)
+            for (int i = 0; i < n; i++)
               if ((i - value).toDouble().clamp(-1, 1).toDouble()
                   case double delta)
                 FractionalTranslation(
@@ -326,5 +336,270 @@ class _RenderAlertsStack extends RenderBox
       ++index;
     }
     return false;
+  }
+}
+
+class _SingleAlertSwitcher extends StatefulWidget {
+  const _SingleAlertSwitcher({
+    super.key,
+    required this.child,
+    required this.constraints,
+    required this.duration,
+    required this.curve,
+  });
+
+  final Widget child;
+  final BoxConstraints constraints;
+  final Duration duration;
+  final Curve curve;
+
+  @override
+  State<_SingleAlertSwitcher> createState() => _SingleAlertSwitcherState();
+}
+
+enum _ChildAim { a, b }
+
+class _SingleAlertSwitcherState extends State<_SingleAlertSwitcher> {
+  Widget? childA;
+  BoxConstraints? childAConstraints;
+
+  Widget? childB;
+  BoxConstraints? childBConstraints;
+
+  _ChildAim aim = _ChildAim.a;
+
+  @override
+  void initState() {
+    super.initState();
+    childA = widget.child;
+    childAConstraints = widget.constraints;
+  }
+
+  @override
+  void didUpdateWidget(covariant _SingleAlertSwitcher oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.child.key != oldWidget.child.key) {
+      switch (aim) {
+        case _ChildAim.a:
+          childB = widget.child;
+          childBConstraints = widget.constraints;
+          aim = _ChildAim.b;
+          return;
+        case _ChildAim.b:
+          childA = widget.child;
+          childAConstraints = widget.constraints;
+          aim = _ChildAim.a;
+          return;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GenericAnimatedBuilder(
+      value: switch (aim) {
+        _ChildAim.a => 0,
+        _ChildAim.b => 1,
+      },
+      duration: widget.duration,
+      curve: widget.curve,
+      builder: (context, value, child) {
+        return ClipRect(
+          child: _AlertSwitcherRender(
+            t: value,
+            childA: Opacity(
+              opacity: value.rangeMap(from: (0, 0.5), to: (1, 0)),
+              child: childA,
+            ),
+            childB: Opacity(
+              opacity: value.rangeMap(from: (0.5, 1), to: (0, 1)),
+              child: childB,
+            ),
+            constraintsA: childAConstraints ?? BoxConstraints.tight(Size.zero),
+            constraintsB: childBConstraints ?? BoxConstraints.tight(Size.zero),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AlertSwitcherRender extends MultiChildRenderObjectWidget {
+  _AlertSwitcherRender({
+    required this.t, // interpolation parameter 0..1 (a..b)
+    required Widget childA,
+    required Widget childB,
+    required this.constraintsA,
+    required this.constraintsB,
+  }) : assert(t >= 0 && t <= 1),
+       super(children: [childA, childB]);
+
+  final double t;
+  final BoxConstraints constraintsA;
+  final BoxConstraints constraintsB;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _RenderSAS(
+      t: t,
+      constraintsA: constraintsA,
+      constraintsB: constraintsB,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _RenderSAS renderObject,
+  ) {
+    renderObject.t = t;
+    renderObject.constraintsA = constraintsA;
+    renderObject.constraintsB = constraintsB;
+  }
+}
+
+class _SASPD extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderSAS extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _SASPD>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _SASPD> {
+  _RenderSAS({
+    required double t,
+    required BoxConstraints constraintsA,
+    required BoxConstraints constraintsB,
+  }) : _t = t,
+       _constraintsA = constraintsA,
+       _constraintsB = constraintsB;
+
+  double get t => _t;
+  double _t;
+  set t(double value) {
+    if (_t == value) return;
+    assert(value >= 0 && value <= 1);
+    _t = value;
+    markNeedsLayout();
+  }
+
+  BoxConstraints get constraintsA => _constraintsA;
+  BoxConstraints _constraintsA;
+  set constraintsA(BoxConstraints value) {
+    if (_constraintsA == value) return;
+    _constraintsA = value;
+    markNeedsLayout();
+  }
+
+  BoxConstraints get constraintsB => _constraintsB;
+  BoxConstraints _constraintsB;
+  set constraintsB(BoxConstraints value) {
+    if (_constraintsB == value) return;
+    _constraintsB = value;
+    markNeedsLayout();
+  }
+
+  bool get applyParallax => false;
+
+  @override
+  void performLayout() {
+    RenderBox? a = firstChild;
+    RenderBox? b = (a != null) ? (a.parentData as _SASPD).nextSibling : null;
+
+    Size sizeA = Size.zero;
+    if (a != null) {
+      a.layout(_constraintsA, parentUsesSize: true);
+      sizeA = a.size;
+    }
+    Size sizeB = Size.zero;
+    if (b != null) {
+      b.layout(_constraintsB, parentUsesSize: true);
+      sizeB = b.size;
+    }
+
+    // Interpolate dimensions between the two children using t
+    double chosenWidth = _t.rangeMap(to: (sizeA.width, sizeB.width));
+    double chosenHeight = _t.rangeMap(to: (sizeA.height, sizeB.height));
+
+    size = constraints.constrain(Size(chosenWidth, chosenHeight));
+
+    if (a != null) {
+      final deltaY =
+          switch (sizeB.height - sizeA.height) {
+            > 0 => -1,
+            < 0 => 1,
+            _ => -1,
+          } *
+          0.3 *
+          sizeA.height;
+      final _SASPD apd = a.parentData as _SASPD;
+      apd.offset =
+          Alignment.topCenter.alongOffset(size - sizeA as Offset) +
+          (applyParallax
+              ? Offset(0, _t.rangeMap(from: (0, .5), to: (0, deltaY)))
+              : Offset.zero);
+    }
+    if (b != null) {
+      final _SASPD bpd = b.parentData as _SASPD;
+      final deltaY =
+          switch (sizeB.height - sizeA.height) {
+            > 0 => 1,
+            < 0 => -1,
+            _ => 1,
+          } *
+          0.3 *
+          sizeB.height;
+
+      bpd.offset =
+          Alignment.topCenter.alongOffset(size - sizeB as Offset) +
+          (applyParallax
+              ? Offset(0, _t.rangeMap(from: (.5, 1), to: (deltaY, 0)))
+              : Offset.zero);
+    }
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    // Paint children directly without clipping.
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final _SASPD pd = child.parentData as _SASPD;
+      context.paintChild(child, offset + pd.offset);
+      child = pd.nextSibling;
+    }
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    // Only test inside the visible clipped region (size).
+    if (position.dx < 0 ||
+        position.dy < 0 ||
+        position.dx > size.width ||
+        position.dy > size.height) {
+      return false;
+    }
+    RenderBox? child = firstChild;
+    int index = 0;
+    while (child != null) {
+      final _SASPD pd = child.parentData as _SASPD;
+      if (t.round() == index) {
+        return result.addWithPaintOffset(
+          offset: pd.offset,
+          position: position,
+          hitTest: (BoxHitTestResult result, Offset transformed) {
+            return child!.hitTest(result, position: transformed);
+          },
+        );
+      }
+
+      child = pd.nextSibling;
+      index++;
+    }
+    return false;
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _SASPD) {
+      child.parentData = _SASPD();
+    }
   }
 }

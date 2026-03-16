@@ -1,3 +1,4 @@
+import 'package:example/alerts/my_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:panel_frame/panel_frame.dart';
 import 'package:sid_base/sid_base.dart';
@@ -129,27 +130,112 @@ class NoteTile extends StatelessWidget {
       }
     }
 
+    void doDelete() {
+      onDelete();
+      frame.showSnackBar(
+        PanelSnackBar(
+          child: Text('Deleted note: $note'),
+          action: PanelSnackBarAction(
+            icon: const Icon(Icons.undo),
+            onPressed: onRestore,
+          ),
+        ),
+      );
+    }
+
     void promptDelete() {
       frame.showAlert(
         ConfirmPanelAlert.delete(
           title: Text('Delete $note?', overflow: TextOverflow.fade),
-          onConfirmed: () {
-            onDelete();
-            frame.showSnackBar(
-              PanelSnackBar(
-                child: Text('Deleted note: $note'),
-                action: PanelSnackBarAction(
-                  icon: const Icon(Icons.undo),
-                  onPressed: onRestore,
-                ),
-              ),
-            );
-          },
+          onConfirmed: doDelete,
         ),
       );
     }
 
     final theme = context.theme;
+
+    void showOptions() async {
+      final result = await frame.showAlert(
+        AlternativesPanelAlert.grouped(
+          alternatives: [
+            [
+              const PanelAlternative(
+                value: 0,
+                label: Text('Delete'),
+                danger: true,
+                icon: Icon(Icons.delete_forever_outlined),
+              ),
+              const PanelAlternative(
+                value: 1,
+                label: Text('Edit'),
+                icon: Icon(Icons.edit_outlined),
+              ),
+              const PanelAlternative(
+                value: 2,
+                label: Text('Show'),
+                icon: Icon(Icons.remove_red_eye_outlined),
+              ),
+            ],
+            [
+              const PanelAlternative(
+                value: 3,
+                label: Text("I'm not sure"),
+                icon: Icon(Icons.help_outline),
+                secondaryIcon: Icon(Icons.keyboard_arrow_right),
+                overrideAutoCloseOnSubmit: false,
+              ),
+            ],
+          ],
+          onSubmit: (value) {
+            switch (value) {
+              case 0:
+                frame.showAlert(
+                  ConfirmPanelAlert.delete(
+                    title: Text('Delete $note?'),
+                    onConfirmed: doDelete,
+                  ),
+                );
+                return;
+              case 1:
+                edit();
+                return;
+              case 2:
+                // handled outside
+                return;
+              case 3:
+                frame.showAlert(const MyAlert(height: 400));
+                return;
+              default:
+                frame.showSnackBar(
+                  PanelSnackBar(child: Text('Unknown option: $value')),
+                );
+            }
+          },
+        ),
+      );
+      if (!context.mounted) return;
+      switch (result) {
+        case 0:
+          // handled immediately
+          return;
+        case 1:
+          // handled immediately
+          return;
+        case 2:
+          frame.showSnackBar(
+            PanelSnackBar(child: Text('This note says: "$note"')),
+          );
+          return;
+        case 3:
+          // handled immediately
+          return;
+        default:
+          frame.showSnackBar(
+            PanelSnackBar(child: Text('Unknown option: $result')),
+          );
+          return;
+      }
+    }
 
     return ListTile(
       title: Text(note),
@@ -160,7 +246,7 @@ class NoteTile extends StatelessWidget {
         ),
         onPressed: promptDelete,
       ),
-      onTap: edit,
+      onTap: showOptions,
     );
   }
 }

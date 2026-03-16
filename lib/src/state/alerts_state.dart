@@ -2,22 +2,27 @@ part of '../../panel_frame.dart';
 
 class _PanelAlert<T> {
   final Widget child;
+  late final String id;
 
   T? registeredValueForCompletion;
-  late final Completer<T?> completer;
+  late final Completer<T?> _completer;
   _PanelAlert({required this.child}) {
-    completer = Completer<T?>();
+    _completer = Completer<T?>();
+    _alertId++;
+    id = 'panel_frame_alert_$_alertId';
   }
 
   void complete(T? value) {
-    if (completer.isCompleted) return;
-    completer.complete(value ?? registeredValueForCompletion);
+    if (_completer.isCompleted) return;
+    _completer.complete(value ?? registeredValueForCompletion);
   }
 
   void register(T value) {
     registeredValueForCompletion = value;
   }
 }
+
+int _alertId = 0;
 
 extension _AlertsState on _PanelFrameState {
   Future<T?> _addAlert<T>({
@@ -27,61 +32,59 @@ extension _AlertsState on _PanelFrameState {
     if (_alerts.value.isEmpty) {
       _openedFirstAlertFromExpandedPanel.update(isMostlyOpened);
     }
-    if (_isAnimatingBack.value) {
+    final alert = _PanelAlert<T>(child: child);
+    if (_isAnimatingBack.value && _alerts.value.isNotEmpty) {
+      /// open panel is called outside of this anyway, so dont worry about if the closed alert was the last one and triggered a closePanel
+      _alerts.value.last.complete(null);
+      _alerts.value.last = alert;
       _isAnimatingBack.update(false);
-      if (_alerts.value.isNotEmpty) {
-        _alerts.value.removeLast();
-        _alerts.refresh();
-      }
+    } else {
+      _alerts.value.add(alert);
     }
-    final _PanelAlert<T> alert = _PanelAlert<T>(child: child);
-    _alerts.value.add(alert);
     _alerts.refresh();
-    return alert.completer.future;
+    return alert._completer.future;
   }
 
   Future<void> _goBackAlert({
-    required Duration duration,
     required VoidCallback closePanel,
     required bool Function() mountedGetter,
     required dynamic result,
   }) async {
-    if (_isAnimatingBack.value) return;
     if (!mountedGetter()) return;
-    if (_alerts.value.isEmpty) {
-      return closePanel();
-    }
+    if (_alerts.value.isEmpty) return closePanel();
+    if (_isAnimatingBack.value) return;
 
     _alerts.value.last.register(result);
+    final id = _alerts.value.last.id;
+    _animatingBackId++;
+    final int thisAnimateBackId = _animatingBackId + 0;
+    _isAnimatingBack.update(true);
 
     if (_alerts.value.length == 1 &&
         !_openedFirstAlertFromExpandedPanel.value) {
-      // will trigger clear anyway
-      return closePanel();
+      closePanel(); // will trigger clear anyway
+      return;
     }
 
-    _isAnimatingBack.update(true);
-    _animatingBackId++;
-    final id = _animatingBackId;
     // so the stack changes focus to the previous child, and when the current child is out of view we can remove it from the widget tree
-    await Future.delayed(duration);
+    await Future.delayed(style.duration);
     if (!mountedGetter()) return;
-    _finishRemovingAlert(id);
+    _finishRemovingAlert(id, thisAnimateBackId);
   }
 
-  void _finishRemovingAlert(int id) {
-    if (_isAnimatingBack.value &&
-        id == _animatingBackId &&
-        _alerts.value.isNotEmpty) {
-      // if not, it means we called add alert during the back animation,
-      // in which case the last children was already replaced instead of removed
-      _alerts.value.removeLast();
+  void _finishRemovingAlert(String id, int thisAnimateBackId) {
+    final int foundIndex = _alerts.value.indexWhere((e) => e.id == id);
+    if (foundIndex != -1) {
+      _alerts.value[foundIndex].complete(null);
+      _alerts.value.removeAt(foundIndex);
       if (_alerts.value.isEmpty) {
         _openedFirstAlertFromExpandedPanel.update(false);
       }
+      _alerts.refresh();
     }
-    _isAnimatingBack.update(false);
-    _alerts.refresh();
+    if (thisAnimateBackId == _animatingBackId) {
+      _isAnimatingBack.update(false);
+    }
   }
 
   void _clearAlerts() {

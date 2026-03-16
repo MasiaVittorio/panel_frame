@@ -1,4 +1,4 @@
-import 'package:example/alerts/full_screen_alert.dart';
+import 'package:example/alerts/my_alert.dart';
 import 'package:example/components/restore_default_style_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:panel_frame/panel_frame.dart';
@@ -78,7 +78,7 @@ class ExpandedSettingsPage extends StatelessWidget {
                     expandedPanelBorderSide: value
                         ? BorderSide(color: theme.colorScheme.outline)
                         : BorderSide.none,
-                    barrierColor: value
+                    panelBarrierColor: value
                         ? theme.colorScheme.primaryContainer.withValues(
                             alpha: 0.5,
                           )

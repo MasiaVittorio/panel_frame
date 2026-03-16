@@ -37,6 +37,15 @@ mixin PanelFrameState {
     builder,
   });
 
+  Widget _buildCanTopBarExpand({
+    required Widget Function(
+      BuildContext context,
+      int alertsCount,
+      bool wasAlertShownFromExpandedPanel,
+      bool canTopBarExpand,
+    )
+    builder,
+  });
   Widget buildWithIsTopBarExpanded({
     required Widget Function(BuildContext context, bool isTopBarExpanded)
     builder,

@@ -7,6 +7,7 @@ extension _BuildContent on _PanelFrameState {
     final barrier = _Barrier(
       style: style,
       controller: _panelAnimation,
+      isShowingAlert: _isShowingAlert,
       closePanel: closePanel,
     );
 
@@ -52,9 +53,9 @@ extension _BuildContent on _PanelFrameState {
             barrier: barrier,
             style: style,
             alerts: _alerts,
-            isAnimatingBack: _isAnimatingBack,
             openedFirstAlertFromExpandedPanel:
                 _openedFirstAlertFromExpandedPanel,
+            isAnimatingBack: _isAnimatingBack,
           ),
           panel: _DecoratedPanel(
             style: style,

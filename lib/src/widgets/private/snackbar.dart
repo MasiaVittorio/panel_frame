@@ -40,6 +40,8 @@ class _SnackBar extends StatelessWidget {
               color: theme.colorScheme.onPrimaryContainer,
             ),
           ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           child: IconTheme(
             data: IconTheme.of(

@@ -1,4 +1,4 @@
-import 'package:example/alerts/full_screen_alert.dart';
+import 'package:example/alerts/my_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:panel_frame/panel_frame.dart';
 

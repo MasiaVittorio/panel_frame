@@ -4,34 +4,37 @@ class AlternativesPanelAlert<T> extends StatefulWidget {
   const AlternativesPanelAlert({
     super.key,
     required this.alternatives,
-    this.onSelected,
+    this.onSubmit,
     this.confirmationMode = const ReturnImmediately(),
     this.initialValue,
     this.title,
     this.height,
     this.shrinkWrap = true,
+    this.autoCloseOnSubmit = true,
   }) : groupedAlternatives = const [];
 
   const AlternativesPanelAlert.grouped({
     super.key,
     required List<List<PanelAlternative<T>>> alternatives,
-    this.onSelected,
+    this.onSubmit,
     this.confirmationMode = const ReturnImmediately(),
     this.initialValue,
     this.title,
     this.height,
     this.shrinkWrap = true,
+    this.autoCloseOnSubmit = true,
   }) : groupedAlternatives = alternatives,
        alternatives = const [];
 
+  final bool autoCloseOnSubmit;
   final T? initialValue;
   final List<List<PanelAlternative<T>>> groupedAlternatives;
   final List<PanelAlternative<T>> alternatives;
-  // if not provided, the result will complete the future of the previously used .showAlert() method anyway
-  final ValueChanged<T>? onSelected;
-  // if true, radio list tiles are displayed and the user will need to tap on a confirm call to action button to submit their choice.
   final AlternativeConfirmationMode<T> confirmationMode;
   final Widget? title;
+
+  /// the result will complete the future of the previously used .showAlert() method anyway
+  final ValueChanged<T>? onSubmit;
 
   /// only used if shrinkwrap is false
   final double? height;
@@ -63,9 +66,25 @@ class _AlternativesPanelAlertState<T> extends State<AlternativesPanelAlert<T>> {
     final theme = context.theme;
     final frame = context.panelFrame;
 
+    void submitAlternative(PanelAlternative<T> alternative) {
+      if (alternative.overrideAutoCloseOnSubmit ?? widget.autoCloseOnSubmit) {
+        frame.previousAlert(alternative.value);
+      }
+      widget.onSubmit?.call(alternative.value);
+    }
+
     void submit(T value) {
-      widget.onSelected?.call(value);
-      frame.previousAlert(value);
+      bool autoCloseOnSubmit = widget.autoCloseOnSubmit;
+      for (final group in list) {
+        for (final alternative in group) {
+          if (alternative.value == value) {
+            autoCloseOnSubmit =
+                alternative.overrideAutoCloseOnSubmit ?? autoCloseOnSubmit;
+          }
+        }
+      }
+      if (autoCloseOnSubmit) frame.previousAlert(value);
+      widget.onSubmit?.call(value);
     }
 
     final dangerColor = theme.colorScheme.error;
@@ -100,7 +119,7 @@ class _AlternativesPanelAlertState<T> extends State<AlternativesPanelAlert<T>> {
               a,
               hasIcons: hasIcons,
               dangerColor: dangerColor,
-              submit: submit,
+              submit: submitAlternative,
             ),
         ].groupedCards(),
     ];
@@ -141,9 +160,16 @@ class _AlternativesPanelAlertState<T> extends State<AlternativesPanelAlert<T>> {
     PanelAlternative<T> alternative, {
     required bool hasIcons,
     required Color dangerColor,
-    required ValueChanged<T> submit,
+    required ValueChanged<PanelAlternative<T>> submit,
   }) {
     final Widget? leading = switch (alternative.icon) {
+      null => null,
+      Widget icon => _Apply(
+        color: alternative.danger ? dangerColor : null,
+        child: icon,
+      ),
+    };
+    final Widget? trailing = switch (alternative.secondaryIcon) {
       null => null,
       Widget icon => _Apply(
         color: alternative.danger ? dangerColor : null,
@@ -169,9 +195,10 @@ class _AlternativesPanelAlertState<T> extends State<AlternativesPanelAlert<T>> {
     } else {
       return ListTile(
         leading: leading,
+        trailing: trailing,
         title: title,
         subtitle: alternative.subtitle,
-        onTap: () => submit(alternative.value),
+        onTap: () => submit(alternative),
       );
     }
   }
@@ -201,6 +228,8 @@ class PanelAlternative<T> {
   final T value;
   final Widget label;
   final Widget? icon;
+  final Widget? secondaryIcon;
+  final bool? overrideAutoCloseOnSubmit;
   final Widget? subtitle;
   final bool danger;
 
@@ -208,6 +237,8 @@ class PanelAlternative<T> {
     required this.value,
     required this.label,
     this.icon,
+    this.secondaryIcon,
+    this.overrideAutoCloseOnSubmit,
     this.subtitle,
     this.danger = false,
   });

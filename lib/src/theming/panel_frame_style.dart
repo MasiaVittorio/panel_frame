@@ -21,7 +21,8 @@ class PanelFrameStyleData {
 
   final Color bodyBackgroundColor;
   final Color headerColor;
-  final Color barrierColor;
+  final Color alertsBarrierColor;
+  final Color panelBarrierColor;
   final Color collapsedPanelColor;
   final Color expandedPanelColor;
   final Color alertsColor;
@@ -109,7 +110,8 @@ class PanelFrameStyleData {
     required this.alertsShadows,
     required this.bodyBackgroundColor,
     required this.headerColor,
-    required this.barrierColor,
+    required this.alertsBarrierColor,
+    required this.panelBarrierColor,
     required this.collapsedPanelColor,
     required this.expandedPanelColor,
     required this.alertsColor,
@@ -169,7 +171,7 @@ class PanelFrameStyleData {
     );
     _collapsedPanelBottomMargin = _bottomBarHeight + _viewPadding.bottom;
     _collapsedPanelSize = Size(
-      _constraints.maxWidth - collapsedPanelHorizontalMargin,
+      _constraints.maxWidth - collapsedPanelHorizontalMargin * 2,
       collapsedPanelHeight,
     );
   }
@@ -338,7 +340,8 @@ class PanelFrameStyleData {
           customizations.expandedPanelCanCoverViewPadding,
       alertsCanCoverViewPadding: customizations.alertsCanCoverViewPadding,
       showDragHandleInHeaders: customizations.showDragHandleInHeaders,
-      barrierColor: customizations.barrierColor,
+      alertsBarrierColor: customizations.alertsBarrierColor,
+      panelBarrierColor: customizations.panelBarrierColor,
       dismissOnBarrierTap: customizations.dismissOnBarrierTap,
       expandedPanelParallax: customizations.expandedPanelParallax,
       collapsedPanelParallax: customizations.collapsedPanelParallax,

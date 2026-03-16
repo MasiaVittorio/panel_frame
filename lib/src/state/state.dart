@@ -42,8 +42,9 @@ class _PanelFrameState extends State<_PanelFrame>
   final Reactive<Curve> _snackBarCurve = Reactive(Easings.emphasizedDecelerate);
 
   /// related to the others
-  late final Reactive<bool> _isTopBarExpanded;
   late final Reactive<bool> _isShowingAlert;
+  late final Reactive<bool> _canTopBarExpand;
+  late final Reactive<bool> _isTopBarExpanded;
 
   @override
   void dispose() {
@@ -56,8 +57,9 @@ class _PanelFrameState extends State<_PanelFrame>
     _isMostlyOpened.dispose();
     _snackBar.dispose();
     _snackBarCurve.dispose();
-    _isTopBarExpanded.dispose();
     _isShowingAlert.dispose();
+    _canTopBarExpand.dispose();
+    _isTopBarExpanded.dispose();
     super.dispose();
   }
 
@@ -69,7 +71,7 @@ class _PanelFrameState extends State<_PanelFrame>
   /// and is used by the gestures to drive the open / close value of the animation based on the movement of the finger relative to the size of the alert
   double _alertsHeight = 0;
 
-  /// used to be sure we want to remove an alert after waiting for the back animation to end
+  /// used to be sure we want to update the animating back to false after the removing alert delay, since if we went back again then we want to keep _animatingBack to true even after removing the topmost alert
   int _animatingBackId = 0;
 
   /// used to be sure we want to close a snackbar after waiting for its delay duration
@@ -103,9 +105,22 @@ class _PanelFrameState extends State<_PanelFrame>
         _ => false,
       },
     );
-    _isTopBarExpanded = (_isMostlyOpened, _isShowingAlert).related(
-      (isMostlyOpen, isShowingAlert) => isMostlyOpen && !isShowingAlert,
-    );
+    _canTopBarExpand =
+        (_alerts, _openedFirstAlertFromExpandedPanel, _isAnimatingBack).related(
+          (alerts, toExpandedPanel, animatingBack) {
+            if (alerts.isEmpty) return true;
+            // assert(alerts.isNotEmpty);
+            if (alerts.length > 1) return false;
+            // assert(alerts.length == 1);
+            if (!animatingBack) return false;
+            // assert(animatingBack);
+            return toExpandedPanel;
+          },
+        );
+    _isTopBarExpanded = (
+      _isMostlyOpened,
+      _canTopBarExpand,
+    ).related((open, can) => can && open);
   }
 
   double? _lastListenedValue;
@@ -152,17 +167,16 @@ class _PanelFrameState extends State<_PanelFrame>
   /// the future is always completed when the alert is closed, either with a value or with null if the alert is dismissed without returning a value
   @override
   Future<T?> showAlert<T>(Widget alert) {
+    openPanel();
     final future = _addAlert<T>(
       child: alert,
       isMostlyOpened: _isMostlyOpened.value,
     );
-    openPanel();
     return future;
   }
 
   @override
   Future<void> previousAlert<T extends Object?>([T? result]) => _goBackAlert(
-    duration: widget.style.duration,
     closePanel: closePanel,
     mountedGetter: () => mounted,
     result: result,
@@ -171,6 +185,10 @@ class _PanelFrameState extends State<_PanelFrame>
   @override
   Future<void> closePanel() async {
     if (!mounted) return;
+
+    if (_alerts.value.isNotEmpty) {
+      _isAnimatingBack.update(true);
+    }
     context.unfocus();
 
     if (_panelAnimation.value == 0 && !_panelAnimation.isAnimating) {
@@ -180,8 +198,8 @@ class _PanelFrameState extends State<_PanelFrame>
 
     await _panelAnimation.animateBack(
       0.0,
-      duration: widget.style.duration,
-      curve: widget.style.curve,
+      duration: style.duration,
+      curve: style.curve,
     );
     if (!mounted) return;
     _clearAlerts();
@@ -269,6 +287,23 @@ class _PanelFrameState extends State<_PanelFrame>
   Widget buildWithIsPanelOpen({
     required Widget Function(BuildContext context, bool isPanelOpen) builder,
   }) => _isMostlyOpened.build(builder);
+
+  @override
+  Widget _buildCanTopBarExpand({
+    required Widget Function(
+      BuildContext context,
+      int alertsCount,
+      bool wasAlertShownFromExpandedPanel,
+      bool canTopBarExpand,
+    )
+    builder,
+  }) => Reactive.build3(
+    _alerts,
+    _openedFirstAlertFromExpandedPanel,
+    _canTopBarExpand,
+    builder: (context, aVal, bVal, cVal) =>
+        builder(context, aVal.length, bVal, cVal),
+  );
 
   @override
   Widget buildWithIsSnackBarShown({

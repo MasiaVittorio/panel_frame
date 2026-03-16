@@ -6,10 +6,10 @@ class _TopBar extends StatelessWidget {
     required this.panelAnimation,
     required this.style,
     required this.topBarChild,
-    required this.alerts,
-    required this.isAnimatingBack,
-    required this.openedFirstAlertFromExpandedPanel,
     required this.topBarBuilder,
+    required this.alerts,
+    required this.openedFirstAlertFromExpandedPanel,
+    required this.isAnimatingBack,
   });
 
   final _Barrier barrier;
@@ -21,8 +21,8 @@ class _TopBar extends StatelessWidget {
   final Widget? topBarChild;
 
   final Reactive<List<_PanelAlert>> alerts;
-  final Reactive<bool> isAnimatingBack;
   final Reactive<bool> openedFirstAlertFromExpandedPanel;
+  final Reactive<bool> isAnimatingBack;
 
   @override
   Widget build(BuildContext context) {
@@ -33,30 +33,34 @@ class _TopBar extends StatelessWidget {
       alerts,
       isAnimatingBack,
       openedFirstAlertFromExpandedPanel,
-      builder: (context, alerts, animatingBack, toExpanded) {
-        final alertsCount = alerts.length;
-        final backFromFirst = animatingBack && alertsCount == 1;
-        final bool isShowingAlert = alertsCount > 0 && !backFromFirst;
+      builder: (context, alerts, animatingBack, toPanel) {
+        final count = alerts.length;
+        final bool canExpand = (() {
+          if (count == 0) return true;
+          if (count > 1) return false;
+          // assert(count == 1);
+          if (!animatingBack) return false;
+          // assert(animatingBack);
+          return toPanel;
+        })();
+        final bool shouldStayCollapsed = count == 1 && !toPanel;
+        final bool clearBarrier =
+            (count == 1 && animatingBack && toPanel) || (count == 0);
+
         return GenericAnimatedBuilder(
           curve: style.curve,
           duration: style.duration,
-          value: switch ((isShowingAlert, backFromFirst && toExpanded)) {
-            (true, false) => c,
-            _ => e,
-          },
+          value: canExpand ? e : c,
           child: topBarChild,
           builder: (context, animatedExpandedHeight, topBarChild) {
             return ValueListenableBuilder(
               valueListenable: panelAnimation,
               child: topBarChild,
-              builder: (context, value, child) {
-                final definitiveHeight = alertsCount == 1 && !toExpanded
+              builder: (context, openValue, child) {
+                final definitiveHeight = shouldStayCollapsed
                     ? c
-                    : value.rangeMap(to: (c, animatedExpandedHeight));
+                    : openValue.rangeMap(to: (c, animatedExpandedHeight));
 
-                final double barrierOpacity = !isShowingAlert
-                    ? 0
-                    : definitiveHeight.rangeMap(from: (e, c));
                 return Stack(
                   children: [
                     SizedBox(
@@ -65,13 +69,23 @@ class _TopBar extends StatelessWidget {
                         context: context,
                         removeTop: false,
                         removeBottom: true,
-                        child: topBarBuilder(context, child, value),
+                        child: topBarBuilder(context, child, openValue),
                       ),
                     ),
                     Positioned.fill(
                       child: IgnorePointer(
-                        ignoring: barrierOpacity < 0.1,
-                        child: Opacity(opacity: barrierOpacity, child: barrier),
+                        ignoring: clearBarrier,
+                        child: GenericAnimatedBuilder(
+                          duration: style.duration,
+                          curve: style.curve,
+                          value: clearBarrier ? 0 : 1,
+                          child: barrier,
+                          builder: (context, animatedOpacity, barrier) =>
+                              Opacity(
+                                opacity: count == 0 ? 0 : animatedOpacity,
+                                child: barrier,
+                              ),
+                        ),
                       ),
                     ),
                   ],

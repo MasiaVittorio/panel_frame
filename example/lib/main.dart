@@ -44,6 +44,7 @@ class MyHomePage extends StatefulWidget {
         openPanelTopBarOverlap: 0,
         collapsedPanelBorderRadius: 32,
         alertsMargin: EdgeInsets.zero,
+        // duration: Duration(seconds: 3),
       );
 
   @override

@@ -87,7 +87,7 @@ class _DecoratedPanel extends StatelessWidget {
               curve: style.curve,
               value: abm,
               child: _Alerts(
-                alerts: [for (final a in alerts) a.child],
+                alerts: alerts,
                 isAnimatingBack: isAnimatingBack,
                 alertsHeightsUpdate: alertsHeightsUpdate,
                 neededTopSafeAreas: topSafeAreas,
@@ -176,13 +176,12 @@ class _AnimatedDecoratedPanel extends StatelessWidget {
     final color = decoration.color;
     final border = decoration.border;
     final boxShadow = decoration.boxShadow;
+    final computedBottoMmargin = openValue.rangeMap(
+      to: (style._collapsedPanelBottomMargin, expandedBottomMargin),
+    );
     return FixedKeyboardHeight(
       child: Container(
-        margin: EdgeInsets.only(
-          bottom: openValue.rangeMap(
-            to: (style._collapsedPanelBottomMargin, expandedBottomMargin),
-          ),
-        ),
+        margin: EdgeInsets.only(bottom: computedBottoMmargin),
         decoration: BoxDecoration(
           borderRadius: borderRadius,
           color: color,
@@ -209,7 +208,16 @@ class _AnimatedDecoratedPanel extends StatelessWidget {
         ),
       ),
       builder: (context, keyboardHeight, child) {
-        return Pad(bottom: keyboardHeight, child: child);
+        return Pad(
+          bottom: switch (computedBottoMmargin > style._viewPadding.bottom) {
+            false => keyboardHeight,
+            true => switch (keyboardHeight > style._viewPadding.bottom) {
+              true => keyboardHeight - style._viewPadding.bottom,
+              false => keyboardHeight,
+            },
+          },
+          child: child,
+        );
       },
     );
   }
