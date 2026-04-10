@@ -63,6 +63,7 @@ class _DecoratedPanel extends StatelessWidget {
         final cd = style._collapsedDecoration;
         final epd = style._expandedPanelDecoration;
         final abm = style._alertBottomMargin(alert);
+        final atm = style._alertTopMargin(alert);
 
         return neededTopSafeAreas.build((context, topSafeAreas) {
           final double alertInternalTopSafe = switch (topSafeAreas.length) {
@@ -76,6 +77,7 @@ class _DecoratedPanel extends StatelessWidget {
           final ad = style._alertDecoration(
             alert: alert,
             bottomMargin: abm,
+            topMargin: atm,
             topInternalSafeArea: alertInternalTopSafe,
           );
 
@@ -132,6 +134,10 @@ class _DecoratedPanel extends StatelessWidget {
                           expandedDecoration: ed,
                           expandedBottomMargin: expandedBottomMargin,
                           openValue: openValue,
+                          avoidKeyboard: switch (alert) {
+                            PanelAlert alert => alert.avoidKeyboard,
+                            _ => true,
+                          },
                         );
                       },
                     );
@@ -155,6 +161,7 @@ class _AnimatedDecoratedPanel extends StatelessWidget {
     required this.collapsedPanel,
     required this.openValue,
     required this.expandedPanel,
+    required this.avoidKeyboard,
   });
 
   final PanelFrameStyleData style;
@@ -164,6 +171,7 @@ class _AnimatedDecoratedPanel extends StatelessWidget {
   final BoxDecoration expandedDecoration;
   final double expandedBottomMargin;
   final double openValue;
+  final bool avoidKeyboard;
 
   @override
   Widget build(BuildContext context) {
@@ -176,12 +184,12 @@ class _AnimatedDecoratedPanel extends StatelessWidget {
     final color = decoration.color;
     final border = decoration.border;
     final boxShadow = decoration.boxShadow;
-    final computedBottoMmargin = openValue.rangeMap(
+    final computedBottomMmargin = openValue.rangeMap(
       to: (style._collapsedPanelBottomMargin, expandedBottomMargin),
     );
     return FixedKeyboardHeight(
       child: Container(
-        margin: EdgeInsets.only(bottom: computedBottoMmargin),
+        margin: EdgeInsets.only(bottom: computedBottomMmargin),
         decoration: BoxDecoration(
           borderRadius: borderRadius,
           color: color,
@@ -209,13 +217,15 @@ class _AnimatedDecoratedPanel extends StatelessWidget {
       ),
       builder: (context, keyboardHeight, child) {
         return Pad(
-          bottom: switch (computedBottoMmargin > style._viewPadding.bottom) {
-            false => keyboardHeight,
-            true => switch (keyboardHeight > style._viewPadding.bottom) {
-              true => keyboardHeight - style._viewPadding.bottom,
-              false => keyboardHeight,
-            },
-          },
+          bottom: avoidKeyboard
+              ? switch (computedBottomMmargin > style._viewPadding.bottom) {
+                  false => keyboardHeight,
+                  true => switch (keyboardHeight > style._viewPadding.bottom) {
+                    true => keyboardHeight - style._viewPadding.bottom,
+                    false => keyboardHeight,
+                  },
+                }
+              : 0,
           child: child,
         );
       },

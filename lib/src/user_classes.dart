@@ -14,6 +14,7 @@ part of '../panel_frame.dart';
 mixin PanelAlert on Widget {
   bool? get overrideCanCoverViewPadding => null;
   EdgeInsets? get overridePanelMargin => null;
+  bool get avoidKeyboard => true;
 }
 
 /// class MyFullScreenWidget extends StatelessWidget
@@ -26,6 +27,9 @@ mixin PanelAlert on Widget {
 ///   }
 /// }
 mixin FullScreenPanelAlert on PanelAlert {
+  @override
+  bool get avoidKeyboard => false;
+
   @override
   bool? get overrideCanCoverViewPadding => true;
 

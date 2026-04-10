@@ -9,6 +9,8 @@ class _PanelFrame extends StatefulWidget {
     required this.bottomBar,
     required this.topBarChild,
     required this.style,
+    required this.onPanelToggled,
+    required this.redirectPopInvocations,
   });
 
   final PreferredSizeWidget bottomBar;
@@ -20,6 +22,8 @@ class _PanelFrame extends StatefulWidget {
   final Widget? topBarChild;
 
   final PanelFrameStyleData style;
+  final ValueChanged<bool>? onPanelToggled;
+  final bool redirectPopInvocations;
 
   @override
   State<_PanelFrame> createState() => _PanelFrameState();
@@ -81,6 +85,8 @@ class _PanelFrameState extends State<_PanelFrame>
   void initState() {
     super.initState();
 
+    _isMostlyOpened.addListener(_openedListener);
+
     _panelAnimation = AnimationController(
       vsync: this,
       duration: widget.style.duration,
@@ -121,6 +127,10 @@ class _PanelFrameState extends State<_PanelFrame>
       _isMostlyOpened,
       _canTopBarExpand,
     ).related((open, can) => can && open);
+  }
+
+  void _openedListener() {
+    widget.onPanelToggled?.call(_isMostlyOpened.value);
   }
 
   double? _lastListenedValue;

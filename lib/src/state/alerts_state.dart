@@ -17,7 +17,7 @@ class _PanelAlert<T> {
     _completer.complete(value ?? registeredValueForCompletion);
   }
 
-  void register(T value) {
+  void register(T? value) {
     registeredValueForCompletion = value;
   }
 }

@@ -5,12 +5,14 @@ class _Body extends StatelessWidget {
     required this.controller,
     required this.style,
     required this.child,
+    required this.redirectPops,
   });
 
   final AnimationController controller;
   final PanelFrameStyleData style;
 
   /// the body as provided by the user to the [PanelFrame] widget's body parameter
+  final bool redirectPops;
   final Widget child;
 
   @override
@@ -29,9 +31,21 @@ class _Body extends StatelessWidget {
           // animate parallax translation
           valueListenable: controller,
           child: child,
-          builder: (context, value, child) => FractionalTranslation(
-            translation: alerts > 0 ? Offset.zero : Offset(0, -value * p),
-            child: child!,
+          builder: (context, value, child) => PopScope(
+            canPop: redirectPops ? value < 0.1 : true,
+            onPopInvokedWithResult: redirectPops
+                ? (didPop, result) {
+                    if (didPop) return;
+                    if (value >= 0.1) {
+                      context.unfocus();
+                      frame.closePanel();
+                    }
+                  }
+                : null,
+            child: FractionalTranslation(
+              translation: alerts > 0 ? Offset.zero : Offset(0, -value * p),
+              child: child!,
+            ),
           ),
         ),
       ),

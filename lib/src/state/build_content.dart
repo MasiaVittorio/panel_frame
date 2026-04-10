@@ -6,86 +6,67 @@ extension _BuildContent on _PanelFrameState {
     /// animated with an extra opacity layer to cover it only when showing alerts
     final barrier = _Barrier(
       style: style,
+      redirectPops: widget.redirectPopInvocations,
       controller: _panelAnimation,
       isShowingAlert: _isShowingAlert,
       closePanel: closePanel,
+      previousAlert: previousAlert,
     );
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (bool didPop, dynamic result) async {
-        if (didPop) return;
-        if (_isShowingAlert.value) {
-          previousAlert();
-          return;
-        }
-        if (_panelAnimation.value > 0) {
-          closePanel();
-          return;
-        }
-        final navigator = Navigator.of(context);
-        if (navigator.canPop()) {
-          navigator.pop();
-        } else {
-          SystemNavigator.pop();
-        }
-      },
-      child: CleanProvider(
-        data: this,
-        child: _Frame(
+    return CleanProvider(
+      data: this,
+      child: _Frame(
+        style: style,
+        barrier: barrier,
+        body: _Body(
+          redirectPops: widget.redirectPopInvocations,
           style: style,
+          controller: _panelAnimation,
+          child: widget.body,
+        ),
+        bottomBar: _BottomBar(
+          style: style,
+          content: widget.bottomBar,
+          onDragEnd: _onDragEnd,
+          onDragUpdate: _onDragUpdate,
+        ),
+        topBar: _TopBar(
+          panelAnimation: _panelAnimation,
+          topBarBuilder: widget.topBarBuilder,
+          topBarChild: widget.topBarChild,
           barrier: barrier,
-          body: _Body(
+          style: style,
+          alerts: _alerts,
+          openedFirstAlertFromExpandedPanel: _openedFirstAlertFromExpandedPanel,
+          isAnimatingBack: _isAnimatingBack,
+        ),
+        panel: _DecoratedPanel(
+          style: style,
+          alertsHeightsUpdate: _alertsSizesChanged,
+          alertsHeightUpdate: (v) {
+            _alertsHeight = v;
+          },
+          panelAnimation: _panelAnimation,
+          alerts: _alerts,
+          isAnimatingBack: _isAnimatingBack,
+          neededTopSafeAreas: _alertsInternalTopViewPaddings,
+          openedFirstAlertFromExpandedPanel: _openedFirstAlertFromExpandedPanel,
+          onDragEnd: _onDragEnd,
+          onDragUpdate: _onDragUpdate,
+          scrollBehavior: ScrollConfiguration.of(
+            context,
+          ).copyWith(physics: panelContentScrollPhysics),
+          expandedPanelContent: _ExpandedPanelContents(
             style: style,
-            controller: _panelAnimation,
-            child: widget.body,
+            child: widget.expandedPanel,
           ),
-          bottomBar: _BottomBar(
+          collapsedPanel: _CollapsedPanel(
             style: style,
-            content: widget.bottomBar,
-            onDragEnd: _onDragEnd,
-            onDragUpdate: _onDragUpdate,
-          ),
-          topBar: _TopBar(
-            panelAnimation: _panelAnimation,
-            topBarBuilder: widget.topBarBuilder,
-            topBarChild: widget.topBarChild,
-            barrier: barrier,
-            style: style,
-            alerts: _alerts,
-            openedFirstAlertFromExpandedPanel:
-                _openedFirstAlertFromExpandedPanel,
-            isAnimatingBack: _isAnimatingBack,
-          ),
-          panel: _DecoratedPanel(
-            style: style,
-            alertsHeightsUpdate: _alertsSizesChanged,
-            alertsHeightUpdate: (v) {
-              _alertsHeight = v;
-            },
-            panelAnimation: _panelAnimation,
-            alerts: _alerts,
-            isAnimatingBack: _isAnimatingBack,
-            neededTopSafeAreas: _alertsInternalTopViewPaddings,
-            openedFirstAlertFromExpandedPanel:
-                _openedFirstAlertFromExpandedPanel,
-            onDragEnd: _onDragEnd,
-            onDragUpdate: _onDragUpdate,
-            scrollBehavior: ScrollConfiguration.of(
-              context,
-            ).copyWith(physics: panelContentScrollPhysics),
-            expandedPanelContent: _ExpandedPanelContents(
-              style: style,
-              child: widget.expandedPanel,
-            ),
-            collapsedPanel: _CollapsedPanel(
-              style: style,
-              content: widget.collapsedPanel,
-              snackBar: _SnackBar(
-                snackBar: _snackBar,
-                snackbarAnimation: _snackbarAnimation,
-                curve: _snackBarCurve,
-              ),
+            content: widget.collapsedPanel,
+            snackBar: _SnackBar(
+              snackBar: _snackBar,
+              snackbarAnimation: _snackbarAnimation,
+              curve: _snackBarCurve,
             ),
           ),
         ),

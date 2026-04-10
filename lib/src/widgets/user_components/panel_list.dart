@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of '../../../panel_frame.dart';
 
 class PanelList extends StatelessWidget {
@@ -9,9 +10,13 @@ class PanelList extends StatelessWidget {
     this.bottom,
     this.wrapBottomChildWithSafeArea = true,
     this.addVerticalMarginAroundBottomChild = true,
+    this.trailing,
+    this.padTrailing = true,
   }) : height = null,
        shrinkWrap = true,
-       floatingBottom = false;
+       floatingBottom = false,
+       customBuilder = null,
+       builder = null;
 
   const PanelList.expand({
     super.key,
@@ -23,11 +28,61 @@ class PanelList extends StatelessWidget {
     this.wrapBottomChildWithSafeArea = true,
     this.addVerticalMarginAroundBottomChild = true,
     this.floatingBottom = true,
-  }) : shrinkWrap = false;
+    this.trailing,
+    this.padTrailing = true,
+  }) : shrinkWrap = false,
+       customBuilder = null,
+       builder = null;
+
+  const PanelList.custom({
+    super.key,
+    required Widget Function(
+      BuildContext context,
+      Widget invisibleHeader,
+      Widget? invisibleBottom,
+    )
+    this.customBuilder,
+    this.height,
+    this.title,
+    this.showDragHandle,
+    this.bottom,
+    this.wrapBottomChildWithSafeArea = true,
+    this.addVerticalMarginAroundBottomChild = true,
+    this.floatingBottom = true,
+    this.trailing,
+    this.padTrailing = true,
+  }) : shrinkWrap = false,
+       children = const [],
+       builder = null;
+
+  const PanelList.builder({
+    super.key,
+    required Widget Function(BuildContext context, int index) itemBuilder,
+    required int? itemCount,
+    this.height,
+    this.title,
+    this.showDragHandle,
+    this.bottom,
+    this.wrapBottomChildWithSafeArea = true,
+    this.addVerticalMarginAroundBottomChild = true,
+    this.floatingBottom = true,
+    this.trailing,
+    this.padTrailing = true,
+  }) : shrinkWrap = false,
+       children = const [],
+       customBuilder = null,
+       builder = (itemBuilder, itemCount);
 
   final bool? showDragHandle;
+  final Widget? trailing;
+  final bool padTrailing;
   final Widget? title;
   final List<Widget> children;
+  final (
+    Widget Function(BuildContext context, int index) itemBuilder,
+    int? itemCount,
+  )?
+  builder;
   final Widget? bottom;
   final bool wrapBottomChildWithSafeArea;
   final bool addVerticalMarginAroundBottomChild;
@@ -36,12 +91,24 @@ class PanelList extends StatelessWidget {
   final bool shrinkWrap;
   final bool floatingBottom;
 
+  final Widget Function(
+    BuildContext context,
+    Widget invisibleHeader,
+    Widget? invisibleBottom,
+  )?
+  customBuilder;
+
   @override
   Widget build(BuildContext context) {
-    final header = PanelHeader(title: title, showDragHandle: showDragHandle);
+    final header = PanelHeader(
+      title: title,
+      showDragHandle: showDragHandle,
+      trailing: trailing,
+      padTrailing: padTrailing,
+    );
     final Widget? wrappedBottom = switch (bottom) {
       null => null,
-      final Widget bottom => _WrappedBottom(
+      final Widget bottom => PanelListBottomElement(
         wrapWithSafeArea: wrapBottomChildWithSafeArea,
         addVerticalMargin: addVerticalMarginAroundBottomChild,
         child: bottom,
@@ -60,25 +127,6 @@ class PanelList extends StatelessWidget {
       );
     }
 
-    LinearGradient getGradient() {
-      final style = PanelFrameStyle.of(context);
-      final headerColor = style.headerColor;
-
-      return LinearGradient(
-        colors: [
-          headerColor,
-          headerColor.withValues(
-            alpha: 0.70.rangeMap(to: (headerColor.a, 1), from: (0, 0.80)),
-          ),
-          headerColor.withValues(alpha: 1),
-          headerColor.withValues(alpha: 1),
-        ],
-        stops: [0, 0.5, 0.80, 1],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      );
-    }
-
     return SizedBox(
       height: height,
       child: Column(
@@ -91,28 +139,88 @@ class PanelList extends StatelessWidget {
                   data: GroupedCardThemeData(
                     lastPadding: context.theme.layout.margin.medium / 2,
                   ),
-                  child: ListView(
-                    padding: context.safe.copyWith(
-                      top: 0,
-                      bottom: bottom == null ? null : 0,
-                    ),
-                    children: [
+                  child: switch (customBuilder) {
+                    null => switch (builder) {
+                      null => ListView(
+                        padding: context.safe.copyWith(
+                          top: 0,
+                          bottom: bottom == null ? null : 0,
+                        ),
+                        children: [
+                          Opacity(
+                            opacity: 0,
+                            child: IgnorePointer(ignoring: true, child: header),
+                          ),
+                          ...children,
+                          if (floatingBottom)
+                            if (wrappedBottom case Widget wrappedBottom)
+                              Opacity(
+                                opacity: 0,
+                                child: IgnorePointer(
+                                  ignoring: true,
+                                  child: wrappedBottom,
+                                ),
+                              ),
+                        ],
+                      ),
+                      final b => ListView.builder(
+                        padding: context.safe.copyWith(
+                          top: 0,
+                          bottom: bottom == null ? null : 0,
+                        ),
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return Opacity(
+                              opacity: 0,
+                              child: IgnorePointer(
+                                ignoring: true,
+                                child: header,
+                              ),
+                            );
+                          }
+                          if (b.$2 case int itemCount) {
+                            if (floatingBottom &&
+                                wrappedBottom != null &&
+                                index == itemCount + 1) {
+                              return Opacity(
+                                opacity: 0,
+                                child: IgnorePointer(
+                                  ignoring: true,
+                                  child: wrappedBottom,
+                                ),
+                              );
+                            }
+                          }
+                          return b.$1(context, index - 1);
+                        },
+                        itemCount: switch ((
+                          b.$2,
+                          floatingBottom && wrappedBottom != null,
+                        )) {
+                          (int itemCount, true) => itemCount + 2,
+                          (int itemCount, false) => itemCount + 1,
+                          (null, _) => null,
+                        },
+                      ),
+                    },
+                    final b => b(
+                      context,
                       Opacity(
                         opacity: 0,
                         child: IgnorePointer(ignoring: true, child: header),
                       ),
-                      ...children,
-                      if (floatingBottom)
-                        if (wrappedBottom case Widget wrappedBottom)
-                          Opacity(
-                            opacity: 0,
-                            child: IgnorePointer(
-                              ignoring: true,
-                              child: wrappedBottom,
-                            ),
+                      switch (wrappedBottom) {
+                        null => null,
+                        final Widget wrappedBottom => Opacity(
+                          opacity: 0,
+                          child: IgnorePointer(
+                            ignoring: true,
+                            child: wrappedBottom,
                           ),
-                    ],
-                  ),
+                        ),
+                      },
+                    ),
+                  },
                 ),
                 Positioned(top: 0, left: 0, right: 0, child: header),
                 if (floatingBottom)
@@ -121,10 +229,7 @@ class PanelList extends StatelessWidget {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      child: Container(
-                        decoration: BoxDecoration(gradient: getGradient()),
-                        child: wrappedBottom,
-                      ),
+                      child: wrappedBottom,
                     ),
               ],
             ),
@@ -136,24 +241,74 @@ class PanelList extends StatelessWidget {
   }
 }
 
-class _WrappedBottom extends StatelessWidget {
-  const _WrappedBottom({
+class PanelListBottomElement extends StatelessWidget {
+  const PanelListBottomElement({
+    super.key,
     required this.child,
-    required this.wrapWithSafeArea,
-    required this.addVerticalMargin,
+    this.wrapWithSafeArea = true,
+    this.addVerticalMargin = true,
+    this.overrideTopMargin,
   });
 
   final Widget child;
   final bool wrapWithSafeArea;
   final bool addVerticalMargin;
+  final double? overrideTopMargin;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = PanelFrameStyle.of(context);
+    final headerColor = style.headerColor;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            headerColor,
+            headerColor.withValues(
+              alpha: 0.70.rangeMap(to: (headerColor.a, 1), from: (0, 0.80)),
+            ),
+            headerColor.withValues(alpha: 1),
+            headerColor.withValues(alpha: 1),
+          ],
+          stops: [0, 0.5, 0.80, 1],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: _WrappedBottom(
+        wrapWithSafeArea: wrapWithSafeArea,
+        addVerticalMargin: addVerticalMargin,
+        overrideTopMargin: overrideTopMargin,
+        child: child,
+      ),
+    );
+  }
+}
+
+class _WrappedBottom extends StatelessWidget {
+  const _WrappedBottom({
+    required this.child,
+    required this.wrapWithSafeArea,
+    required this.addVerticalMargin,
+    this.overrideTopMargin,
+  });
+
+  final Widget child;
+  final bool wrapWithSafeArea;
+  final bool addVerticalMargin;
+  final double? overrideTopMargin;
 
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
     final layout = theme.layout;
     final double safe = wrapWithSafeArea ? context.safe.bottom : 0;
+
     return Pad(
-      top: addVerticalMargin ? layout.margin.medium / 2 : 0,
+      top:
+          overrideTopMargin ??
+          (addVerticalMargin ? layout.margin.medium / 2 : 0),
       bottom: switch ((safe, addVerticalMargin)) {
         (0, true) => layout.margin.medium,
         (0, false) => 0,

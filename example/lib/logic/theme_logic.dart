@@ -31,13 +31,6 @@ class ThemeLogic extends ThemeLogicBase {
     return theme.copyWith(
       scaffoldBackgroundColor: scaffoldBackgroundColor,
       iconTheme: theme.iconTheme.copyWith(color: theme.colorScheme.onSurface),
-      // inputDecorationTheme: theme.inputDecorationTheme.copyWith(
-      //   filled: true,
-      //   border: OutlineInputBorder(
-      //     borderRadius: BorderRadius.circular(layout.radius.medium),
-      //     borderSide: BorderSide.none,
-      //   ),
-      // ),
       inputDecorationTheme: theme.inputDecorationTheme.copyWith(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(layout.radius.medium),

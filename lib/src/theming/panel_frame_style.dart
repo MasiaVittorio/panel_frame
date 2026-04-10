@@ -264,12 +264,15 @@ class PanelFrameStyleData {
   BoxDecoration _alertDecoration({
     required Widget? alert,
     required double bottomMargin,
+    required double topMargin,
     required double topInternalSafeArea, // if > 0, touches top of the screen
   }) {
     final double horizontal = _alertBaseMargin(alert).horizontal;
     return BoxDecoration(
       boxShadow: alertsShadows,
-      border: Border.fromBorderSide(alertsBorderSide),
+      border: horizontal.abs() + topMargin.abs() + bottomMargin.abs() == 0
+          ? null
+          : Border.fromBorderSide(alertsBorderSide),
       color: alertsColor,
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(switch ((horizontal, topInternalSafeArea > 0)) {

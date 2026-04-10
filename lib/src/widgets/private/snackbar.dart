@@ -30,7 +30,7 @@ class _SnackBar extends StatelessWidget {
         final frame = context.panelFrame;
 
         final Widget insideContent = Pad(
-          horizontal: layout.margin.large,
+          horizontal: snackBar.scrollable ? 0 : layout.margin.large,
           child: Center(child: snackBar.child),
         );
 

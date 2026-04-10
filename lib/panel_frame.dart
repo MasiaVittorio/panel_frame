@@ -5,7 +5,6 @@ import 'package:call_to_action/call_to_action.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:panel_frame/panel_frame.dart';
 import 'package:segmented_slider/segmented_slider.dart';
 import 'package:sid_base/sid_base.dart';
@@ -61,6 +60,8 @@ class PanelFrame extends StatelessWidget {
     required this.bottomBar,
     this.topBarChild,
     this.style,
+    this.onPanelToggled,
+    this.redirectPopInvocations = true,
   });
 
   final PreferredSizeWidget bottomBar;
@@ -72,6 +73,8 @@ class PanelFrame extends StatelessWidget {
   final Widget? topBarChild;
 
   final PanelFrameStyleCustomizations? style;
+  final ValueChanged<bool>? onPanelToggled;
+  final bool redirectPopInvocations;
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +98,8 @@ class PanelFrame extends StatelessWidget {
               bottomBar: bottomBar,
               topBarChild: topBarChild,
               style: resolved,
+              onPanelToggled: onPanelToggled,
+              redirectPopInvocations: redirectPopInvocations,
             ),
           ),
         );
