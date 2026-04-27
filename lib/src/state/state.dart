@@ -17,8 +17,7 @@ class _PanelFrame extends StatefulWidget {
   final Widget collapsedPanel;
   final Widget expandedPanel;
   final Widget body;
-  final Widget Function(BuildContext context, Widget? child, double openValue)
-  topBarBuilder;
+  final FrameTopBarBuilder? topBarBuilder;
   final Widget? topBarChild;
 
   final PanelFrameStyleData style;
@@ -184,6 +183,14 @@ class _PanelFrameState extends State<_PanelFrame>
     );
     return future;
   }
+
+  @override
+  void registerAlertResult<T extends Object?>(T? result) =>
+      _registerAlertResult(mountedGetter: () => mounted, result: result);
+
+  @override
+  void clearRegisteredAlertResult() =>
+      _clearRegisteredAlertResult(mountedGetter: () => mounted);
 
   @override
   Future<void> previousAlert<T extends Object?>([T? result]) => _goBackAlert(

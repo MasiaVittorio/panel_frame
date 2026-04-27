@@ -16,8 +16,7 @@ class _TopBar extends StatelessWidget {
   final AnimationController panelAnimation;
   final PanelFrameStyleData style;
 
-  final Widget Function(BuildContext context, Widget? child, double openValue)
-  topBarBuilder;
+  final FrameTopBarBuilder topBarBuilder;
   final Widget? topBarChild;
 
   final Reactive<List<_PanelAlert>> alerts;
@@ -53,44 +52,41 @@ class _TopBar extends StatelessWidget {
           value: canExpand ? e : c,
           child: topBarChild,
           builder: (context, animatedExpandedHeight, topBarChild) {
-            return ValueListenableBuilder(
-              valueListenable: panelAnimation,
-              child: topBarChild,
-              builder: (context, openValue, child) {
-                final definitiveHeight = shouldStayCollapsed
-                    ? c
-                    : openValue.rangeMap(to: (c, animatedExpandedHeight));
-
-                return Stack(
-                  children: [
-                    SizedBox(
-                      height: definitiveHeight,
+            return Stack(
+              children: [
+                ValueListenableBuilder(
+                  valueListenable: panelAnimation,
+                  child: topBarBuilder(context, topBarChild, panelAnimation),
+                  builder: (context, openValue, child) {
+                    return SizedBox(
+                      height: shouldStayCollapsed
+                          ? c
+                          : openValue.rangeMap(to: (c, animatedExpandedHeight)),
                       child: MediaQuery.removePadding(
                         context: context,
                         removeTop: false,
                         removeBottom: true,
-                        child: topBarBuilder(context, child, openValue),
+                        child: child!,
+                      ),
+                    );
+                  },
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    ignoring: clearBarrier,
+                    child: GenericAnimatedBuilder(
+                      duration: style.duration,
+                      curve: style.curve,
+                      value: clearBarrier ? 0 : 1,
+                      child: barrier,
+                      builder: (context, animatedOpacity, barrier) => Opacity(
+                        opacity: count == 0 ? 0 : animatedOpacity,
+                        child: barrier,
                       ),
                     ),
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        ignoring: clearBarrier,
-                        child: GenericAnimatedBuilder(
-                          duration: style.duration,
-                          curve: style.curve,
-                          value: clearBarrier ? 0 : 1,
-                          child: barrier,
-                          builder: (context, animatedOpacity, barrier) =>
-                              Opacity(
-                                opacity: count == 0 ? 0 : animatedOpacity,
-                                child: barrier,
-                              ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+                  ),
+                ),
+              ],
             );
           },
         );

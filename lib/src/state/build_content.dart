@@ -22,6 +22,7 @@ extension _BuildContent on _PanelFrameState {
           redirectPops: widget.redirectPopInvocations,
           style: style,
           controller: _panelAnimation,
+          removeTopSafe: widget.topBarBuilder != null,
           child: widget.body,
         ),
         bottomBar: _BottomBar(
@@ -30,16 +31,20 @@ extension _BuildContent on _PanelFrameState {
           onDragEnd: _onDragEnd,
           onDragUpdate: _onDragUpdate,
         ),
-        topBar: _TopBar(
-          panelAnimation: _panelAnimation,
-          topBarBuilder: widget.topBarBuilder,
-          topBarChild: widget.topBarChild,
-          barrier: barrier,
-          style: style,
-          alerts: _alerts,
-          openedFirstAlertFromExpandedPanel: _openedFirstAlertFromExpandedPanel,
-          isAnimatingBack: _isAnimatingBack,
-        ),
+        topBar: switch (widget.topBarBuilder) {
+          FrameTopBarBuilder topBarBuilder => _TopBar(
+            panelAnimation: _panelAnimation,
+            topBarBuilder: topBarBuilder,
+            topBarChild: widget.topBarChild,
+            barrier: barrier,
+            style: style,
+            alerts: _alerts,
+            openedFirstAlertFromExpandedPanel:
+                _openedFirstAlertFromExpandedPanel,
+            isAnimatingBack: _isAnimatingBack,
+          ),
+          null => null,
+        },
         panel: _DecoratedPanel(
           style: style,
           alertsHeightsUpdate: _alertsSizesChanged,

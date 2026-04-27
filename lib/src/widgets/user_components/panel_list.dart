@@ -11,6 +11,7 @@ class PanelList extends StatelessWidget {
     this.wrapBottomChildWithSafeArea = true,
     this.addVerticalMarginAroundBottomChild = true,
     this.trailing,
+    this.onTapTitle,
     this.padTrailing = true,
   }) : height = null,
        shrinkWrap = true,
@@ -29,6 +30,7 @@ class PanelList extends StatelessWidget {
     this.addVerticalMarginAroundBottomChild = true,
     this.floatingBottom = true,
     this.trailing,
+    this.onTapTitle,
     this.padTrailing = true,
   }) : shrinkWrap = false,
        customBuilder = null,
@@ -50,6 +52,7 @@ class PanelList extends StatelessWidget {
     this.addVerticalMarginAroundBottomChild = true,
     this.floatingBottom = true,
     this.trailing,
+    this.onTapTitle,
     this.padTrailing = true,
   }) : shrinkWrap = false,
        children = const [],
@@ -67,6 +70,7 @@ class PanelList extends StatelessWidget {
     this.addVerticalMarginAroundBottomChild = true,
     this.floatingBottom = true,
     this.trailing,
+    this.onTapTitle,
     this.padTrailing = true,
   }) : shrinkWrap = false,
        children = const [],
@@ -98,6 +102,8 @@ class PanelList extends StatelessWidget {
   )?
   customBuilder;
 
+  final VoidCallback? onTapTitle;
+
   @override
   Widget build(BuildContext context) {
     final header = PanelHeader(
@@ -105,6 +111,7 @@ class PanelList extends StatelessWidget {
       showDragHandle: showDragHandle,
       trailing: trailing,
       padTrailing: padTrailing,
+      onTap: onTapTitle,
     );
     final Widget? wrappedBottom = switch (bottom) {
       null => null,
@@ -248,11 +255,13 @@ class PanelListBottomElement extends StatelessWidget {
     this.wrapWithSafeArea = true,
     this.addVerticalMargin = true,
     this.overrideTopMargin,
+    this.overrideBottomMargin,
   });
 
   final Widget child;
   final bool wrapWithSafeArea;
   final bool addVerticalMargin;
+  final double? overrideBottomMargin;
   final double? overrideTopMargin;
 
   @override
@@ -280,6 +289,7 @@ class PanelListBottomElement extends StatelessWidget {
         wrapWithSafeArea: wrapWithSafeArea,
         addVerticalMargin: addVerticalMargin,
         overrideTopMargin: overrideTopMargin,
+        overrideBottomMargin: overrideBottomMargin,
         child: child,
       ),
     );
@@ -292,12 +302,14 @@ class _WrappedBottom extends StatelessWidget {
     required this.wrapWithSafeArea,
     required this.addVerticalMargin,
     this.overrideTopMargin,
+    this.overrideBottomMargin,
   });
 
   final Widget child;
   final bool wrapWithSafeArea;
   final bool addVerticalMargin;
   final double? overrideTopMargin;
+  final double? overrideBottomMargin;
 
   @override
   Widget build(BuildContext context) {
@@ -309,11 +321,13 @@ class _WrappedBottom extends StatelessWidget {
       top:
           overrideTopMargin ??
           (addVerticalMargin ? layout.margin.medium / 2 : 0),
-      bottom: switch ((safe, addVerticalMargin)) {
-        (0, true) => layout.margin.medium,
-        (0, false) => 0,
-        (final double s, _) => s,
-      },
+      bottom:
+          overrideBottomMargin ??
+          switch ((safe, addVerticalMargin)) {
+            (0, true) => layout.margin.medium,
+            (0, false) => 0,
+            (final double s, _) => s,
+          },
       child: child,
     );
   }

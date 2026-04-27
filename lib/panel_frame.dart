@@ -47,6 +47,13 @@ extension PanelFrameStateExtension on BuildContext {
   PanelFrameStyleData get panelFrameStyle => PanelFrameStyle.of(this);
 }
 
+typedef FrameTopBarBuilder =
+    Widget Function(
+      BuildContext context,
+      Widget? child,
+      Animation<double> animation,
+    );
+
 class PanelFrame extends StatelessWidget {
   static PanelFrameState of(BuildContext context) =>
       context.provide<_PanelFrameState>();
@@ -68,8 +75,7 @@ class PanelFrame extends StatelessWidget {
   final Widget collapsedPanel;
   final Widget expandedPanel;
   final Widget body;
-  final Widget Function(BuildContext context, Widget? child, double openValue)
-  topBarBuilder;
+  final FrameTopBarBuilder? topBarBuilder;
   final Widget? topBarChild;
 
   final PanelFrameStyleCustomizations? style;
@@ -82,9 +88,14 @@ class PanelFrame extends StatelessWidget {
       builder: (context, constraints) {
         final resolved = PanelFrameStyleData._from(
           context: context,
-          customizations: style ?? const PanelFrameStyleCustomizations(),
+          customizations: (style ?? const PanelFrameStyleCustomizations())
+              .copyWith(
+                topBarExpandedHeight: topBarBuilder == null ? 0 : null,
+                topBarCollapsedHeight: topBarBuilder == null ? 0 : null,
+                openPanelTopBarOverlap: topBarBuilder == null ? 0 : null,
+              ),
           constraints: constraints,
-          bottomBar: bottomBar,
+          bottomBarHeight: bottomBar.preferredSize.height,
         );
         return ConstrainedBox(
           constraints: constraints,

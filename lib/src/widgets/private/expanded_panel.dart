@@ -359,7 +359,7 @@ class _ExpandedPanelContents extends StatelessWidget {
       height: style._expandedPanelHeight,
       child: _OverrideMediaQueryPadding(
         alsoViewPadding: true,
-        top: 0,
+        top: style._expandedPanelTopMargin == 0 ? null : 0,
         bottom: style._expandedPanelInternalBottomSafe,
         child: child,
       ),

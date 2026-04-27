@@ -13,7 +13,7 @@ class _Frame extends StatelessWidget {
   final PanelFrameStyleData style;
 
   /// with optional extra barrier already laid on top
-  final _TopBar topBar;
+  final _TopBar? topBar;
 
   /// with size and contents inside already animated
   final _DecoratedPanel panel;
@@ -35,7 +35,9 @@ class _Frame extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            top: style.topBarCollapsedHeight + style._viewPadding.top,
+            top: topBar == null
+                ? 0
+                : style.topBarCollapsedHeight + style._viewPadding.top,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -45,7 +47,8 @@ class _Frame extends StatelessWidget {
             ),
           ),
           Positioned.fill(child: barrier),
-          Positioned.fill(child: Al.topCenter(child: topBar)),
+          if (topBar case _TopBar topBar)
+            Positioned.fill(child: Al.topCenter(child: topBar)),
           Positioned.fill(child: Al.bottomCenter(child: panel)),
         ],
       ),

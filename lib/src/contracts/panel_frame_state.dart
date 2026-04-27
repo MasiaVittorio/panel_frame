@@ -8,6 +8,11 @@ mixin PanelFrameState {
   /// the future completes when the alert close animation finishes or is canceled. the [result] is the value that completes the future returned by the [showAlert] method that showed the alert being dismissed.
   Future<void> previousAlert<T>([T? result]);
 
+  /// the current alert will complete with [result] if previousAlert is called without a result when the time comes
+  void registerAlertResult<T>(T? result);
+
+  void clearRegisteredAlertResult();
+
   /// the future should complete immediately when the snackbar is dismissed, even if the back animation is still ongoing.
   /// if called again with a new snackbar while the previous snackbar has been dismissed but not finished its back animation, the new snackbar should immediately replace the old one, reverting the back animation
   Future<T?> showSnackBar<T>(PanelSnackBar snackBar);

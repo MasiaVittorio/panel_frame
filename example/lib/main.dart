@@ -92,9 +92,9 @@ class _MyHomePageState extends State<MyHomePage> {
               expandedPanel: const ExpandedPanel(),
               body: const MyBody(),
               topBarChild: const AppBarTitle(),
-              topBarBuilder: (context, child, openValue) => FrameAppBar(
+              topBarBuilder: (context, child, animation) => FrameAppBar(
                 title: child!,
-                openValue: openValue,
+                animation: animation,
                 panelSubtitle: const AppBarPanelSubtitle(),
               ),
               bottomBar: const MyBottomBar(),

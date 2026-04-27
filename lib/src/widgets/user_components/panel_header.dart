@@ -1,11 +1,18 @@
 part of '../../../panel_frame.dart';
 
+extension ContextCanGoBackAlert on BuildContext {
+  bool get canGoBackInPanelAlert {
+    return provideMaybe<_AlertMetadata>()?.canGoBack ?? false;
+  }
+}
+
 class PanelHeader extends StatelessWidget {
   const PanelHeader({
     super.key,
     this.title,
     this.showDragHandle,
     this.trailing,
+    this.onTap,
     this.padTrailing = true,
   });
 
@@ -13,6 +20,7 @@ class PanelHeader extends StatelessWidget {
   final bool? showDragHandle;
   final Widget? trailing;
   final bool padTrailing;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -21,15 +29,14 @@ class PanelHeader extends StatelessWidget {
     final style = PanelFrameStyle.of(context);
     final showDragHandle = this.showDragHandle ?? style.showDragHandleInHeaders;
     final panelFrame = context.panelFrame;
-    final canGoBack =
-        context.provideMaybe<_AlertMetadata>()?.canGoBack ?? false;
+    final canGoBack = context.canGoBackInPanelAlert;
 
     return Material(
       color: style.headerColor,
       child: SafeArea(
         bottom: false,
         child: InkWell(
-          onTap: panelFrame.previousAlert,
+          onTap: onTap ?? panelFrame.previousAlert,
           child: Stack(
             children: [
               Column(

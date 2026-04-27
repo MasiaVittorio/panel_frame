@@ -75,6 +75,7 @@ class PanelFrameStyleData {
   late final double _expandedPanelHeight;
   late final double _expandedPanelInternalBottomSafe;
   late final double _expandedPanelBottomMargin;
+  late final double _expandedPanelTopMargin;
 
   late final double _expandedPanelWidth;
 
@@ -128,17 +129,25 @@ class PanelFrameStyleData {
     _constraints = constraints;
     _viewPadding = viewPadding;
     _bottomBarHeight = bottomBarHeight;
-    _expandedPanelBottomMargin =
-        expandedPanelMargin.bottom +
-        (expandedPanelCanCoverViewPadding && expandedPanelMargin.bottom == 0
-            ? 0
-            : viewPadding.bottom);
+    _expandedPanelBottomMargin = switch (expandedPanelCanCoverViewPadding) {
+      true => expandedPanelMargin.bottom,
+      false => math.max(expandedPanelMargin.bottom, viewPadding.bottom),
+    };
+
+    _expandedPanelTopMargin = switch (topBarExpandedHeight) {
+      0 => switch (expandedPanelCanCoverViewPadding) {
+        true => expandedPanelMargin.top,
+        false => math.max(expandedPanelMargin.top, viewPadding.top),
+      },
+      _ =>
+        expandedPanelMargin.top +
+            viewPadding.top +
+            topBarExpandedHeight -
+            openPanelTopBarOverlap,
+    };
     _expandedPanelHeight =
         constraints.maxHeight -
-        viewPadding.top -
-        topBarExpandedHeight +
-        openPanelTopBarOverlap -
-        expandedPanelMargin.top -
+        _expandedPanelTopMargin -
         _expandedPanelBottomMargin;
     _expandedPanelInternalBottomSafe = _expandedPanelBottomMargin == 0
         ? _viewPadding.bottom
@@ -291,7 +300,7 @@ class PanelFrameStyleData {
     required BuildContext context,
     required PanelFrameStyleCustomizations customizations,
     required BoxConstraints constraints,
-    required PreferredSizeWidget bottomBar,
+    required double bottomBarHeight,
   }) {
     final defaults = PanelFrameDefaultsTheme.of(context);
     final theme = Theme.of(context);
@@ -372,7 +381,7 @@ class PanelFrameStyleData {
       expandedShadows:
           customizations.expandedShadows ??
           defaults.expandedShadows(context, theme),
-      bottomBarHeight: bottomBar.preferredSize.height,
+      bottomBarHeight: bottomBarHeight,
     );
   }
 }

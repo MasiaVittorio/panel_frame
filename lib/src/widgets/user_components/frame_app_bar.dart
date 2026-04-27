@@ -4,7 +4,7 @@ class FrameAppBar extends StatelessWidget {
   const FrameAppBar({
     super.key,
     required this.title,
-    required this.openValue,
+    required this.animation,
     this.panelSubtitle,
     this.showMenuButton = true,
     this.menuButtonOnTheRight = false,
@@ -12,7 +12,7 @@ class FrameAppBar extends StatelessWidget {
     this.overrideExpandedColor,
   });
 
-  final double openValue;
+  final Animation<double> animation;
   final Widget title;
   final Widget? panelSubtitle;
   final bool showMenuButton;
@@ -39,12 +39,8 @@ class FrameAppBar extends StatelessWidget {
     final frame = context.panelFrame;
     final frameStyle = context.panelFrameStyle;
 
-    return Container(
-      color: Color.lerp(
-        overrideCollapsedColor ?? frameStyle.topBarCollapsedColor,
-        overrideExpandedColor ?? frameStyle.topBarExpandedColor,
-        openValue,
-      ),
+    return ValueListenableBuilder(
+      valueListenable: animation,
       child: Material(
         type: MaterialType.transparency,
         child: SafeArea(
@@ -103,11 +99,17 @@ class FrameAppBar extends StatelessWidget {
                                 curve: frameStyle.curve,
                                 child: subtitle,
                                 builder: (context, value, subtitle) {
-                                  return FractionallyListed(
-                                    value: stayCollapsed
-                                        ? 0
-                                        : openValue.rangeMap(to: (0, value)),
+                                  return ValueListenableBuilder(
+                                    valueListenable: animation,
                                     child: subtitle,
+                                    builder: (context, double value, child) {
+                                      return FractionallyListed(
+                                        value: stayCollapsed
+                                            ? 0
+                                            : value.rangeMap(to: (0, value)),
+                                        child: child,
+                                      );
+                                    },
                                   );
                                 },
                               );
@@ -122,6 +124,16 @@ class FrameAppBar extends StatelessWidget {
           ),
         ),
       ),
+      builder: (context, value, child) {
+        return Container(
+          color: Color.lerp(
+            overrideCollapsedColor ?? frameStyle.topBarCollapsedColor,
+            overrideExpandedColor ?? frameStyle.topBarExpandedColor,
+            value,
+          ),
+          child: child,
+        );
+      },
     );
   }
 }

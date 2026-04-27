@@ -6,6 +6,7 @@ class _Body extends StatelessWidget {
     required this.style,
     required this.child,
     required this.redirectPops,
+    required this.removeTopSafe,
   });
 
   final AnimationController controller;
@@ -14,6 +15,7 @@ class _Body extends StatelessWidget {
   /// the body as provided by the user to the [PanelFrame] widget's body parameter
   final bool redirectPops;
   final Widget child;
+  final bool removeTopSafe;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class _Body extends StatelessWidget {
       // for scaffold's fab location
       alsoViewPadding: true,
       bottom: style.collapsedPanelHeight / 2,
-      top: 0,
+      top: removeTopSafe ? 0 : null,
       child: frame.buildWithAlertsCount(
         // avoid parallax if showing alert
         builder: (context, alerts) => ValueListenableBuilder(

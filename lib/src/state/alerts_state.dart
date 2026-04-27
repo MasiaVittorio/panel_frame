@@ -18,7 +18,11 @@ class _PanelAlert<T> {
   }
 
   void register(T? value) {
-    registeredValueForCompletion = value;
+    registeredValueForCompletion = value ?? registeredValueForCompletion;
+  }
+
+  void clearRegisteredResult() {
+    registeredValueForCompletion = null;
   }
 }
 
@@ -43,6 +47,25 @@ extension _AlertsState on _PanelFrameState {
     }
     _alerts.refresh();
     return alert._completer.future;
+  }
+
+  void _registerAlertResult({
+    required bool Function() mountedGetter,
+    required dynamic result,
+  }) async {
+    if (!mountedGetter()) return;
+    if (_isAnimatingBack.value) return;
+
+    _alerts.value.last.register(result);
+  }
+
+  void _clearRegisteredAlertResult({
+    required bool Function() mountedGetter,
+  }) async {
+    if (!mountedGetter()) return;
+    if (_isAnimatingBack.value) return;
+
+    _alerts.value.last.clearRegisteredResult();
   }
 
   Future<void> _goBackAlert({
