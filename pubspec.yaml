@@ -13,11 +13,14 @@ dependencies:
   flutter:
     sdk: flutter
   sid_base:
-    path: ../sid_base
+    git:
+      url: https://github.com/MasiaVittorio/sid_base.git
   call_to_action:
-    path: ../call_to_action
+    git:
+      url: https://github.com/MasiaVittorio/call_to_action.git
   segmented_slider:
-    path: ../segmented_slider
+    git:
+      url: https://github.com/MasiaVittorio/segmented_slider.git
   keyboard_insets: ^0.1.2
 
 dev_dependencies:

@@ -36,9 +36,11 @@ packages:
   call_to_action:
     dependency: "direct main"
     description:
-      path: "../call_to_action"
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "12570f5b84abc6d910f59dd2a3a7748c6b720f0f"
+      url: "https://github.com/MasiaVittorio/call_to_action.git"
+    source: git
     version: "1.0.0+1"
   characters:
     dependency: transitive
@@ -482,16 +484,20 @@ packages:
   segmented_slider:
     dependency: "direct main"
     description:
-      path: "../segmented_slider"
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "5df15af4713f66a5c7b4379699145e7c1ace6dc1"
+      url: "https://github.com/MasiaVittorio/segmented_slider.git"
+    source: git
     version: "1.0.0+1"
   sid_base:
     dependency: "direct main"
     description:
-      path: "../sid_base"
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "5905a11570af3b2aa158ed1120c991e073bdceb0"
+      url: "https://github.com/MasiaVittorio/sid_base.git"
+    source: git
     version: "1.0.0+1"
   sky_engine:
     dependency: transitive
