@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of '../../../panel_frame.dart';
 
 class AlternativesPanelAlert<T> extends StatefulWidget {
@@ -11,6 +12,7 @@ class AlternativesPanelAlert<T> extends StatefulWidget {
     this.height,
     this.shrinkWrap = true,
     this.autoCloseOnSubmit = true,
+    this.content,
   }) : groupedAlternatives = const [];
 
   const AlternativesPanelAlert.grouped({
@@ -23,6 +25,7 @@ class AlternativesPanelAlert<T> extends StatefulWidget {
     this.height,
     this.shrinkWrap = true,
     this.autoCloseOnSubmit = true,
+    this.content,
   }) : groupedAlternatives = alternatives,
        alternatives = const [];
 
@@ -32,6 +35,7 @@ class AlternativesPanelAlert<T> extends StatefulWidget {
   final List<PanelAlternative<T>> alternatives;
   final AlternativeConfirmationMode<T> confirmationMode;
   final Widget? title;
+  final Widget? content;
 
   /// the result will complete the future of the previously used .showAlert() method anyway
   final ValueChanged<T>? onSubmit;
@@ -110,13 +114,30 @@ class _AlternativesPanelAlertState<T> extends State<AlternativesPanelAlert<T>> {
         ),
       _ => null,
     };
+    final layout = theme.layout;
 
     final List<Widget> children = [
+      if (widget.content case Widget content)
+        Pad(
+          horizontal: layout.margin.medium,
+          bottom: layout.spacing.medium,
+          top: layout.spacing.tiny,
+          child: DefaultTextStyle(
+            style: DefaultTextStyle.of(context).style.merge(
+              theme.textTheme.bodyMedium!.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            child: content,
+          ),
+        ),
       for (final group in list)
         ...[
           for (final a in group)
-            tile(
+            _Tile<T>(
               a,
+              confirmationMode: widget.confirmationMode,
               hasIcons: hasIcons,
               dangerColor: dangerColor,
               submit: submitAlternative,
@@ -155,13 +176,26 @@ class _AlternativesPanelAlertState<T> extends State<AlternativesPanelAlert<T>> {
       return child;
     }
   }
+}
 
-  Widget tile(
-    PanelAlternative<T> alternative, {
-    required bool hasIcons,
-    required Color dangerColor,
-    required ValueChanged<PanelAlternative<T>> submit,
-  }) {
+class _Tile<T> extends StatelessWidget {
+  const _Tile(
+    this.alternative, {
+    required this.hasIcons,
+    required this.dangerColor,
+    required this.submit,
+    required this.confirmationMode,
+  });
+
+  final PanelAlternative<T> alternative;
+  final bool hasIcons;
+  final Color dangerColor;
+  final ValueChanged<PanelAlternative<T>> submit;
+
+  final AlternativeConfirmationMode<T> confirmationMode;
+
+  @override
+  Widget build(BuildContext context) {
     final Widget? leading = switch (alternative.icon) {
       null => null,
       Widget icon => _Apply(
@@ -181,7 +215,7 @@ class _AlternativesPanelAlertState<T> extends State<AlternativesPanelAlert<T>> {
       color: alternative.danger ? dangerColor : null,
       child: alternative.label,
     );
-    if (widget.confirmationMode case SelectAndConfirm<T> mode) {
+    if (confirmationMode case SelectAndConfirm<T> mode) {
       return RadioListTile<T>(
         value: alternative.value,
         controlAffinity: hasIcons
@@ -247,8 +281,8 @@ class PanelAlternative<T> {
 sealed class AlternativeConfirmationMode<T> {
   const AlternativeConfirmationMode();
 
-  static const ReturnImmediately returnImmediately = ReturnImmediately();
-  static const SelectAndConfirm selectAndConfirm = SelectAndConfirm();
+  static ReturnImmediately<T> returnImmediately<T>() => ReturnImmediately<T>();
+  static SelectAndConfirm<T> selectAndConfirm<T>() => SelectAndConfirm<T>();
 }
 
 final class ReturnImmediately<T> extends AlternativeConfirmationMode<T> {

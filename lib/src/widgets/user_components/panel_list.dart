@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of '../../../panel_frame.dart';
 
 class PanelList extends StatelessWidget {
@@ -13,6 +12,7 @@ class PanelList extends StatelessWidget {
     this.trailing,
     this.onTapTitle,
     this.padTrailing = true,
+    this.invisibleHeader = false,
   }) : height = null,
        shrinkWrap = true,
        floatingBottom = false,
@@ -32,6 +32,7 @@ class PanelList extends StatelessWidget {
     this.trailing,
     this.onTapTitle,
     this.padTrailing = true,
+    this.invisibleHeader = false,
   }) : shrinkWrap = false,
        customBuilder = null,
        builder = null;
@@ -54,6 +55,7 @@ class PanelList extends StatelessWidget {
     this.trailing,
     this.onTapTitle,
     this.padTrailing = true,
+    this.invisibleHeader = false,
   }) : shrinkWrap = false,
        children = const [],
        builder = null;
@@ -72,6 +74,7 @@ class PanelList extends StatelessWidget {
     this.trailing,
     this.onTapTitle,
     this.padTrailing = true,
+    this.invisibleHeader = false,
   }) : shrinkWrap = false,
        children = const [],
        customBuilder = null,
@@ -104,14 +107,19 @@ class PanelList extends StatelessWidget {
 
   final VoidCallback? onTapTitle;
 
+  final bool invisibleHeader;
+
   @override
   Widget build(BuildContext context) {
-    final header = PanelHeader(
-      title: title,
-      showDragHandle: showDragHandle,
-      trailing: trailing,
-      padTrailing: padTrailing,
-      onTap: onTapTitle,
+    final header = Opacity(
+      opacity: invisibleHeader ? 0 : 1,
+      child: PanelHeader(
+        title: title,
+        showDragHandle: showDragHandle,
+        trailing: trailing,
+        padTrailing: padTrailing,
+        onTap: onTapTitle,
+      ),
     );
     final Widget? wrappedBottom = switch (bottom) {
       null => null,

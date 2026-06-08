@@ -10,6 +10,7 @@ class ConfirmPanelAlert extends StatelessWidget {
     this.overrideConfirmIcon,
     this.overrideCancelIcon,
     this.danger = false,
+    this.content,
   });
 
   const ConfirmPanelAlert.delete({
@@ -21,6 +22,7 @@ class ConfirmPanelAlert extends StatelessWidget {
     this.overrideConfirmIcon = const Icon(Icons.delete_forever_outlined),
     this.overrideCancelIcon,
     this.danger = true,
+    this.content,
   });
 
   // if not provided, the alert will pop true or false and the caller can decide what to do with that. if provided, the alert will still pop true or false, but this callback can be called immediately (before the panel animation is finished)
@@ -30,6 +32,7 @@ class ConfirmPanelAlert extends StatelessWidget {
   final Widget? cancelLabel;
   final Widget? overrideConfirmIcon;
   final Widget? overrideCancelIcon;
+  final Widget? content;
   final bool danger;
 
   @override
@@ -39,6 +42,7 @@ class ConfirmPanelAlert extends StatelessWidget {
       onSubmit: (value) {
         if (value) onConfirmed?.call();
       },
+      content: content,
       alternatives: [
         PanelAlternative(
           value: true,

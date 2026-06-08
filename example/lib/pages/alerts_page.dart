@@ -74,7 +74,8 @@ class AlertsPage extends StatelessWidget {
             leading: const Icon(Icons.list),
             onTap: () => frame.showAlert(
               AlternativesPanelAlert.grouped(
-                confirmationMode: AlternativeConfirmationMode.selectAndConfirm,
+                confirmationMode:
+                    AlternativeConfirmationMode.selectAndConfirm(),
                 onSubmit: (value) => frame.showSnackBar(
                   PanelSnackBar(child: Text('Selected value: $value')),
                 ),
