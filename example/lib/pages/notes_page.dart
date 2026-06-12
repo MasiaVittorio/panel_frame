@@ -81,6 +81,13 @@ class _NotesPageState extends State<NotesPage> {
         child: const Icon(Icons.add),
         onPressed: () async {
           final result = await InsertPanelAlert.show(
+            autocompletions: [
+              'Apple',
+              'Banana',
+              'Cherry',
+              'Date',
+              'Elderberry',
+            ],
             context: context,
             label: 'New note',
           );
@@ -120,6 +127,7 @@ class NoteTile extends StatelessWidget {
 
     void edit() async {
       final result = await InsertPanelAlert.show(
+        autocompletions: ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry'],
         context: context,
         label: 'Edit note',
         initialValue: note,

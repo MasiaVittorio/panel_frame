@@ -14,6 +14,7 @@ class InsertPanelAlert extends StatefulWidget {
     this.maxLength,
     this.allowEmptyString = true,
     this.trimResult = true,
+    this.autocompletions = const [],
   });
 
   final TextEditingController? controller;
@@ -28,6 +29,7 @@ class InsertPanelAlert extends StatefulWidget {
   final int? maxLength;
   final bool allowEmptyString;
   final bool trimResult;
+  final Iterable<String> autocompletions;
 
   static Future<String> show({
     required BuildContext context,
@@ -36,6 +38,7 @@ class InsertPanelAlert extends StatefulWidget {
     required String label,
     String? confirmLabel,
     TextCapitalization textCapitalization = TextCapitalization.sentences,
+    final Iterable<String> autocompletions = const [],
   }) {
     final Completer<String> completer = Completer<String>();
     context.panelFrame.showAlert(
@@ -45,6 +48,7 @@ class InsertPanelAlert extends StatefulWidget {
         keyboardType: keyboardType,
         confirmLabel: confirmLabel,
         textCapitalization: textCapitalization,
+        autocompletions: autocompletions,
         onSubmit: (value) {
           completer.complete(value);
         },
@@ -60,12 +64,16 @@ class InsertPanelAlert extends StatefulWidget {
 class _InsertPanelAlertState extends State<InsertPanelAlert> {
   late TextEditingController controller;
   late bool controllerProvidedByWidget;
+  late FocusNode focusNode;
+
+  String ignoreAutoCompletionsFor = '';
 
   @override
   void initState() {
     super.initState();
     controller =
         widget.controller ?? TextEditingController(text: widget.initialValue);
+    focusNode = FocusNode();
     controllerProvidedByWidget = widget.controller != null;
   }
 
@@ -87,6 +95,7 @@ class _InsertPanelAlertState extends State<InsertPanelAlert> {
     if (!controllerProvidedByWidget) {
       controller.dispose();
     }
+    focusNode.dispose();
     super.dispose();
   }
 
@@ -104,6 +113,7 @@ class _InsertPanelAlertState extends State<InsertPanelAlert> {
           Pad(
             horizontal: layout.margin.medium,
             child: TextField(
+              focusNode: focusNode,
               maxLines: widget.maxLines,
               maxLength: widget.maxLength,
               autofocus: true,
@@ -111,7 +121,9 @@ class _InsertPanelAlertState extends State<InsertPanelAlert> {
               keyboardType: widget.keyboardType,
               onSubmitted: (value) {
                 final text = widget.trimResult ? value.trim() : value;
-                if (widget.allowEmptyString == false && text.isEmpty) return;
+                if (widget.allowEmptyString == false && text.isEmpty) {
+                  return;
+                }
                 widget.onSubmit?.call(text);
                 context.panelFrame.previousAlert(text);
               },
@@ -129,14 +141,87 @@ class _InsertPanelAlertState extends State<InsertPanelAlert> {
             valueListenable: controller,
             builder: (context, value, child) {
               final text = widget.trimResult ? value.text.trim() : value.text;
-              return CallToAction(
-                action: text.isEmpty && !widget.allowEmptyString
-                    ? null
-                    : () {
-                        widget.onSubmit?.call(text);
-                        context.panelFrame.previousAlert(text);
-                      },
-                label: Text(widget.confirmLabel ?? 'Confirm'.todo),
+              if (text != ignoreAutoCompletionsFor) {
+                ignoreAutoCompletionsFor = '';
+              }
+              Iterable<String> autoCompletions =
+                  text.trim().isEmpty || text == ignoreAutoCompletionsFor
+                  ? <String>[]
+                  : widget.autocompletions
+                        .where(
+                          (option) =>
+                              option.toLowerCase().contains(
+                                text.trim().toLowerCase(),
+                              ) &&
+                              text.trim().toLowerCase() != option.toLowerCase(),
+                        )
+                        .toList()
+                        .take(5);
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AnimatedListed(
+                    axisAlignment: 0.5,
+                    listed: autoCompletions.isNotEmpty,
+                    child: Pad(
+                      horizontal: layout.margin.medium,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SingleChildScrollView(
+                              scrollDirection: .horizontal,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children:
+                                    <Widget>[
+                                      for (final option in autoCompletions)
+                                        MyChip(
+                                          label: option,
+                                          onPressed: () {
+                                            ignoreAutoCompletionsFor = option;
+                                            controller.text = option;
+                                          },
+                                        ),
+                                    ].separateWith(
+                                      Space.horizontal(layout.spacing.medium),
+                                      alsoLast: true,
+                                    ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 56,
+                            child: CallToAction.danger.filled(
+                              horizontalMargin: 0,
+                              spaced: false,
+                              action: () {
+                                setState(() {
+                                  ignoreAutoCompletionsFor = text;
+                                });
+                              },
+                              label: const Icon(Icons.close),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  AnimatedListed(
+                    listed: autoCompletions.isEmpty,
+                    axisAlignment: -0.5,
+                    child: CallToAction(
+                      action: text.isEmpty && !widget.allowEmptyString
+                          ? null
+                          : () {
+                              widget.onSubmit?.call(text);
+                              context.panelFrame.previousAlert(text);
+                            },
+                      label: Text(widget.confirmLabel ?? 'Confirm'.todo),
+                    ),
+                  ),
+                ],
               );
             },
           ),

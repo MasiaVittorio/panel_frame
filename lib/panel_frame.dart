@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:panel_frame/panel_frame.dart';
+import 'package:panel_frame/src/widgets/user_components/my_chip.dart';
 import 'package:segmented_slider/segmented_slider.dart';
 import 'package:sid_base/sid_base.dart';
 

@@ -35,6 +35,20 @@ class AlertsPage extends StatelessWidget {
               final result = await InsertPanelAlert.show(
                 context: context,
                 label: 'Insert some text',
+                autocompletions: [
+                  'Apple',
+                  'Banana',
+                  'Cherry',
+                  'Date',
+                  'Elderberry',
+                  'Apple1',
+                  'Apple2',
+                  'Apple3',
+                  'Apple4',
+                  'Apple5',
+                  'Apple6',
+                  'Apple7',
+                ],
               );
               if (result case String text) {
                 if (!context.mounted) return;
