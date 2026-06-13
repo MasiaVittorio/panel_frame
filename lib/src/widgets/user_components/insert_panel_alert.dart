@@ -182,6 +182,7 @@ class _InsertPanelAlertState extends State<InsertPanelAlert> {
                                           onPressed: () {
                                             ignoreAutoCompletionsFor = option;
                                             controller.text = option;
+                                            focusNode.requestFocus();
                                           },
                                         ),
                                     ].separateWith(
@@ -193,13 +194,14 @@ class _InsertPanelAlertState extends State<InsertPanelAlert> {
                           ),
                           SizedBox(
                             width: 56,
-                            child: CallToAction.danger.filled(
+                            child: CallToAction.secondary.filled(
                               horizontalMargin: 0,
                               spaced: false,
                               action: () {
                                 setState(() {
                                   ignoreAutoCompletionsFor = text;
                                 });
+                                focusNode.requestFocus();
                               },
                               label: const Icon(Icons.close),
                             ),
